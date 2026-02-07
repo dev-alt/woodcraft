@@ -53,6 +53,7 @@
 
     <!-- Connection/Status -->
     <StreamGeometry x:Key="IconConnect">M17 7h-4v2h4a3 3 0 1 1 0 6h-4v2h4a5 5 0 0 0 0-10zm-6 8H7a3 3 0 1 1 0-6h4V7H7a5 5 0 0 0 0 10h4v-2zm-2-4h6v2H9v-2z</StreamGeometry>
+    <StreamGeometry x:Key="IconJoinery">M3 3h7v4H7v3H3V3zm11 0h7v7h-4v3h-3V3zM3 14h3v3h4v4H3v-7zm18 0v7h-7v-4h-3v-3h10z</StreamGeometry>
     <StreamGeometry x:Key="IconDisconnect">M17 7h-4v1.9h4a3.1 3.1 0 1 1 0 6.2h-4V17h4a5 5 0 0 0 0-10zM7 17h4v-1.9H7a3.1 3.1 0 1 1 0-6.2h4V7H7a5 5 0 0 0 0 10zm-2.26.74L6.15 19l13.58-13.58-1.41-1.41L4.74 17.58z</StreamGeometry>
     <StreamGeometry x:Key="IconCheck">M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z</StreamGeometry>
     <StreamGeometry x:Key="IconWarning">M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z</StreamGeometry>

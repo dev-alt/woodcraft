@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using Avalonia;
+using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Woodcraft.Core.Interfaces;
@@ -44,7 +46,16 @@ public partial class Viewer3DViewModel : ViewModelBase
     [ObservableProperty]
     private double _cameraRotationY = 45;
 
+    [ObservableProperty]
+    private Part? _secondarySelectedPart;
+
+    [ObservableProperty]
+    private bool _canAddJoint;
+
     public ObservableCollection<Part3DModel> Models { get; } = [];
+    public ObservableCollection<JointLineModel> JointLines { get; } = [];
+
+    public event Action? JointAdded;
 
     public Viewer3DViewModel(ICadService cadService)
     {
@@ -118,17 +129,42 @@ public partial class Viewer3DViewModel : ViewModelBase
                     PositionZ = part.Position[2],
                     SizeX = part.Dimensions.Length,
                     SizeY = part.Dimensions.Width,
-                    SizeZ = part.Dimensions.Thickness
+                    SizeZ = part.Dimensions.Thickness,
+                    WoodBrush = MaterialInfo.CreateWoodBrush(part.Material),
+                    WoodBorderBrush = MaterialInfo.CreateBorderBrush(part.Material),
                 };
 
                 Models.Add(model);
             }
 
+            RebuildJointLines();
             await Task.CompletedTask;
         }
         finally
         {
             IsLoading = false;
+        }
+    }
+
+    private void RebuildJointLines()
+    {
+        JointLines.Clear();
+        if (Project == null) return;
+
+        foreach (var joint in Project.Joinery)
+        {
+            var modelA = Models.FirstOrDefault(m => m.Part?.Id == joint.PartAId);
+            var modelB = Models.FirstOrDefault(m => m.Part?.Id == joint.PartBId);
+            if (modelA == null || modelB == null) continue;
+
+            JointLines.Add(new JointLineModel
+            {
+                StartX = modelA.PositionX + modelA.SizeX / 2,
+                StartY = modelA.PositionY + modelA.SizeY / 2,
+                EndX = modelB.PositionX + modelB.SizeX / 2,
+                EndY = modelB.PositionY + modelB.SizeY / 2,
+                Label = AddJointDialogViewModel.GetTypeDisplayName(joint.JoineryType),
+            });
         }
     }
 
@@ -191,6 +227,51 @@ public partial class Viewer3DViewModel : ViewModelBase
     {
         CameraRotationX = 30;
         CameraRotationY = 45;
+    }
+
+    public void SelectPartByModel(Part3DModel? model, bool isCtrlHeld = false)
+    {
+        if (isCtrlHeld && SelectedPart != null && model?.Part != null && model.Part != SelectedPart)
+        {
+            SecondarySelectedPart = model.Part;
+            CanAddJoint = true;
+            // Update visual - mark secondary with dashed style
+            foreach (var m in Models)
+                m.IsSecondarySelected = m.Part?.Id == model.Part.Id;
+        }
+        else
+        {
+            SecondarySelectedPart = null;
+            CanAddJoint = false;
+            foreach (var m in Models)
+                m.IsSecondarySelected = false;
+            SelectedPart = model?.Part;
+        }
+    }
+
+    [RelayCommand]
+    private void AddJoint(AddJointDialogViewModel dialogResult)
+    {
+        if (Project == null || SelectedPart == null || SecondarySelectedPart == null) return;
+
+        var joint = new Joint(dialogResult.SelectedType, SelectedPart.Id, SecondarySelectedPart.Id);
+        Project.Joinery.Add(joint);
+
+        // Clear secondary selection
+        SecondarySelectedPart = null;
+        CanAddJoint = false;
+        foreach (var m in Models)
+            m.IsSecondarySelected = false;
+
+        RebuildJointLines();
+        JointAdded?.Invoke();
+    }
+
+    public void UpdatePartPosition(Part3DModel model)
+    {
+        if (model.Part == null) return;
+        model.Part.Position[0] = model.PositionX - 20; // Remove layout offset
+        model.Part.Position[1] = model.PositionY - 20;
     }
 
     partial void OnSelectedPartChanged(Part? value)
@@ -263,9 +344,33 @@ public partial class Part3DModel : ObservableObject
     [ObservableProperty]
     private bool _isSelected;
 
-    // Wood color (RGBA)
-    public double ColorR { get; set; } = 0.8;
-    public double ColorG { get; set; } = 0.6;
-    public double ColorB { get; set; } = 0.4;
-    public double ColorA { get; set; } = 1.0;
+    [ObservableProperty]
+    private bool _isSecondarySelected;
+
+    // Material-specific wood appearance
+    public IBrush WoodBrush { get; set; } = new SolidColorBrush(Color.Parse("#CD853F"));
+    public IBrush WoodBorderBrush { get; set; } = new SolidColorBrush(Color.Parse("#8B4513"));
+}
+
+public partial class JointLineModel : ObservableObject
+{
+    [ObservableProperty]
+    private double _startX;
+
+    [ObservableProperty]
+    private double _startY;
+
+    [ObservableProperty]
+    private double _endX;
+
+    [ObservableProperty]
+    private double _endY;
+
+    [ObservableProperty]
+    private string _label = string.Empty;
+
+    public Point Start => new(StartX, StartY);
+    public Point End => new(EndX, EndY);
+    public double MidX => (StartX + EndX) / 2;
+    public double MidY => (StartY + EndY) / 2;
 }

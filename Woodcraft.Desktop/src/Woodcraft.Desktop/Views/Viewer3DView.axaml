@@ -109,6 +109,7 @@
                             <Run Text="x"/>
                             <Run Text="{Binding SelectedPart.Dimensions.Thickness}"/>
                         </TextBlock>
+                        <TextBlock Text="{Binding SelectedPart.Material}" Classes="muted" FontSize="11"/>
                     </StackPanel>
                 </Border>
 
@@ -166,17 +167,13 @@
                                     Canvas.Left="{Binding PositionX}"
                                     Canvas.Top="{Binding PositionY}"
                                     CornerRadius="2"
-                                    BoxShadow="2 2 8 0 #40000000">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-                                        <GradientStop Color="#CD853F" Offset="0"/>
-                                        <GradientStop Color="#DEB887" Offset="0.25"/>
-                                        <GradientStop Color="#D2691E" Offset="0.5"/>
-                                        <GradientStop Color="#DEB887" Offset="0.75"/>
-                                        <GradientStop Color="#CD853F" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <Border BorderBrush="#8B4513"
+                                    BoxShadow="2 2 8 0 #40000000"
+                                    Background="{Binding WoodBrush}"
+                                    Cursor="Hand"
+                                    PointerPressed="OnPartPointerPressed"
+                                    PointerMoved="OnPartPointerMoved"
+                                    PointerReleased="OnPartPointerReleased">
+                                <Border BorderBrush="{Binding WoodBorderBrush}"
                                         BorderThickness="2"
                                         CornerRadius="2">
                                     <!-- Selection highlight overlay -->
@@ -185,6 +182,12 @@
                                                 Opacity="0.3"
                                                 IsVisible="{Binding IsSelected}"
                                                 CornerRadius="1"/>
+                                        <!-- Secondary selection (Ctrl+click) dashed overlay -->
+                                        <Border BorderBrush="{DynamicResource WarningBrush}"
+                                                BorderThickness="2"
+                                                CornerRadius="1"
+                                                IsVisible="{Binding IsSecondarySelected}"
+                                                Opacity="0.8"/>
                                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Part.Id}"
                                                        HorizontalAlignment="Center"
@@ -209,6 +212,28 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+
+                <!-- Joint connection lines (drawn from code-behind) -->
+                <Canvas x:Name="JointLinesCanvas" IsHitTestVisible="False"/>
+
+                <!-- Add Joint floating button (shown when Ctrl+click selects second part) -->
+                <Button Classes="primary"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Bottom"
+                        Margin="12,12,12,60"
+                        Padding="12,8"
+                        IsVisible="{Binding CanAddJoint}"
+                        Click="OnAddJointClick">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconJoinery}" Width="14" Height="14"/>
+                        <TextBlock FontWeight="SemiBold" FontSize="12">
+                            <Run Text="Join: "/>
+                            <Run Text="{Binding SelectedPart.Id}"/>
+                            <Run Text=" + "/>
+                            <Run Text="{Binding SecondarySelectedPart.Id}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Button>
             </Grid>
         </Border>
     </DockPanel>

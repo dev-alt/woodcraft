@@ -13,6 +13,15 @@ public partial class PartEditorViewModel : ViewModelBase
     [ObservableProperty]
     private Part? _part;
 
+    private Project? _project;
+    public Project? Project
+    {
+        get => _project;
+        set => SetProperty(ref _project, value);
+    }
+
+    public ObservableCollection<JointDisplay> PartJoints { get; } = [];
+
     [ObservableProperty]
     private string _partId = string.Empty;
 
@@ -46,11 +55,21 @@ public partial class PartEditorViewModel : ViewModelBase
     public ObservableCollection<GrainDirection> GrainDirections { get; } =
         new(Enum.GetValues<GrainDirection>());
 
-    public ObservableCollection<string> Materials { get; } =
-    [
-        "pine", "red_oak", "white_oak", "hard_maple", "soft_maple",
-        "cherry", "walnut", "poplar", "ash", "birch", "hickory", "plywood", "mdf"
-    ];
+    public ObservableCollection<MaterialInfo> MaterialOptions { get; } = new(MaterialInfo.All);
+
+    private MaterialInfo? _selectedMaterialInfo;
+    public MaterialInfo? SelectedMaterialInfo
+    {
+        get => _selectedMaterialInfo;
+        set
+        {
+            if (SetProperty(ref _selectedMaterialInfo, value) && value != null)
+            {
+                if (Material != value.Id)
+                    Material = value.Id;
+            }
+        }
+    }
 
     public event Action? ChangesApplied;
 
@@ -77,6 +96,49 @@ public partial class PartEditorViewModel : ViewModelBase
         Material = value.Material ?? "pine";
         GrainDirection = value.GrainDirection;
         Notes = value.Notes;
+
+        // Sync material info selection
+        _selectedMaterialInfo = MaterialOptions.FirstOrDefault(m => m.Id == Material);
+        OnPropertyChanged(nameof(SelectedMaterialInfo));
+
+        RefreshPartJoints();
+    }
+
+    public void RefreshPartJoints()
+    {
+        PartJoints.Clear();
+        if (Part == null || Project == null) return;
+
+        foreach (var joint in Project.Joinery)
+        {
+            if (joint.PartAId == Part.Id || joint.PartBId == Part.Id)
+            {
+                var otherPartId = joint.PartAId == Part.Id ? joint.PartBId : joint.PartAId;
+                PartJoints.Add(new JointDisplay(
+                    joint,
+                    AddJointDialogViewModel.GetTypeDisplayName(joint.JoineryType),
+                    otherPartId));
+            }
+        }
+    }
+
+    [RelayCommand]
+    private void RemoveJoint(JointDisplay jointDisplay)
+    {
+        if (Project == null) return;
+        Project.Joinery.Remove(jointDisplay.Joint);
+        RefreshPartJoints();
+        ChangesApplied?.Invoke();
+    }
+
+    partial void OnMaterialChanged(string value)
+    {
+        var info = MaterialOptions.FirstOrDefault(m => m.Id == value);
+        if (info != null && _selectedMaterialInfo != info)
+        {
+            _selectedMaterialInfo = info;
+            OnPropertyChanged(nameof(SelectedMaterialInfo));
+        }
     }
 
     private void ClearFields()
@@ -90,6 +152,8 @@ public partial class PartEditorViewModel : ViewModelBase
         Material = "pine";
         GrainDirection = GrainDirection.Length;
         Notes = string.Empty;
+        _selectedMaterialInfo = MaterialOptions.FirstOrDefault(m => m.Id == "pine");
+        OnPropertyChanged(nameof(SelectedMaterialInfo));
     }
 
     [RelayCommand]
@@ -167,3 +231,5 @@ public partial class PartEditorViewModel : ViewModelBase
         }
     }
 }
+
+public record JointDisplay(Joint Joint, string TypeName, string OtherPartId);

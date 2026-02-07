@@ -173,8 +173,23 @@
 
                         <!-- Material -->
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="Material" Classes="label"/>
-                        <ComboBox Grid.Row="4" Grid.Column="0" ItemsSource="{Binding Materials}"
-                                  SelectedItem="{Binding Material}"/>
+                        <ComboBox Grid.Row="4" Grid.Column="0" ItemsSource="{Binding MaterialOptions}"
+                                  SelectedItem="{Binding SelectedMaterialInfo}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:MaterialInfo">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Border Width="16" Height="16" CornerRadius="3"
+                                                Background="{Binding SwatchBrush}"
+                                                BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                                BorderThickness="1"/>
+                                        <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding PriceCategory}" FontSize="10"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
                         <!-- Grain Direction -->
                         <TextBlock Grid.Row="3" Grid.Column="2" Text="Grain Direction" Classes="label"/>

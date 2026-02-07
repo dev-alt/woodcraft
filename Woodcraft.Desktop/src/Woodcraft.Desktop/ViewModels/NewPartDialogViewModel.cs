@@ -45,11 +45,21 @@ public partial class NewPartDialogViewModel : ViewModelBase
     public ObservableCollection<GrainDirection> GrainDirections { get; } =
         new(Enum.GetValues<GrainDirection>());
 
-    public ObservableCollection<string> Materials { get; } =
-    [
-        "pine", "red_oak", "white_oak", "hard_maple", "soft_maple",
-        "cherry", "walnut", "poplar", "ash", "birch", "hickory", "plywood", "mdf"
-    ];
+    public ObservableCollection<MaterialInfo> MaterialOptions { get; } = new(MaterialInfo.All);
+
+    private MaterialInfo? _selectedMaterialInfo;
+    public MaterialInfo? SelectedMaterialInfo
+    {
+        get => _selectedMaterialInfo;
+        set
+        {
+            if (SetProperty(ref _selectedMaterialInfo, value) && value != null)
+            {
+                if (Material != value.Id)
+                    Material = value.Id;
+            }
+        }
+    }
 
     public ObservableCollection<PartPreset> Presets { get; } =
     [
@@ -70,6 +80,17 @@ public partial class NewPartDialogViewModel : ViewModelBase
     public NewPartDialogViewModel()
     {
         GeneratePartName();
+        _selectedMaterialInfo = MaterialOptions.FirstOrDefault(m => m.Id == Material);
+    }
+
+    partial void OnMaterialChanged(string value)
+    {
+        var info = MaterialOptions.FirstOrDefault(m => m.Id == value);
+        if (info != null && _selectedMaterialInfo != info)
+        {
+            _selectedMaterialInfo = info;
+            OnPropertyChanged(nameof(SelectedMaterialInfo));
+        }
     }
 
     public void Initialize(int existingPartCount)

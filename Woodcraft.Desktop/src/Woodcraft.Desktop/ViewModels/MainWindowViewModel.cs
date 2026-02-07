@@ -95,6 +95,16 @@ public partial class MainWindowViewModel : ViewModelBase
             }
         };
 
+        // Refresh tree when a joint is added from the 3D view
+        Viewer3DViewModel.JointAdded += () =>
+        {
+            if (CurrentProject != null)
+            {
+                ProjectViewModel.Project = CurrentProject; // Refresh tree to show new joint
+                PartEditorViewModel.RefreshPartJoints(); // Refresh joints in editor
+            }
+        };
+
         // Set default view
         CurrentView = ProjectViewModel;
     }
@@ -118,6 +128,7 @@ public partial class MainWindowViewModel : ViewModelBase
             Viewer3DViewModel.Project = project;
             CutListViewModel.Project = project;
             BOMViewModel.Project = project;
+            PartEditorViewModel.Project = project;
             StatusMessage = $"Project '{project.Name}' loaded with {project.Parts.Count} parts";
         }
         else
@@ -127,6 +138,7 @@ public partial class MainWindowViewModel : ViewModelBase
             Viewer3DViewModel.Project = null;
             CutListViewModel.Project = null;
             BOMViewModel.Project = null;
+            PartEditorViewModel.Project = null;
             SelectedPart = null;
             StatusMessage = "Ready - Create or open a project to get started";
         }

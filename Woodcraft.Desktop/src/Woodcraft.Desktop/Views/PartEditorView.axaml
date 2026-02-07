@@ -113,8 +113,23 @@
                     <!-- Material Selection -->
                     <StackPanel Spacing="4">
                         <TextBlock Text="Wood Species" Classes="label"/>
-                        <ComboBox ItemsSource="{Binding Materials}"
-                                  SelectedItem="{Binding Material}"/>
+                        <ComboBox ItemsSource="{Binding MaterialOptions}"
+                                  SelectedItem="{Binding SelectedMaterialInfo}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:MaterialInfo">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Border Width="16" Height="16" CornerRadius="3"
+                                                Background="{Binding SwatchBrush}"
+                                                BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                                BorderThickness="1"/>
+                                        <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding PriceCategory}" FontSize="10"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
 
                     <!-- Grain Direction -->
@@ -141,6 +156,49 @@
                              AcceptsReturn="True"
                              TextWrapping="Wrap"
                              Height="80"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Joints Card -->
+            <Border Classes="card" IsVisible="{Binding PartJoints.Count}">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconJoinery}" Width="14" Height="14"
+                                  Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                        <TextBlock Text="Joints" Classes="subheading"/>
+                    </StackPanel>
+
+                    <Separator Margin="-12,4,-12,4"/>
+
+                    <ItemsControl ItemsSource="{Binding PartJoints}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:JointDisplay">
+                                <Border Padding="8,6" Margin="0,2"
+                                        Background="{DynamicResource BackgroundLighterBrush}"
+                                        CornerRadius="4">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="{Binding TypeName}" FontWeight="SemiBold" FontSize="12"/>
+                                            <TextBlock FontSize="11" Classes="muted">
+                                                <Run Text="to "/>
+                                                <Run Text="{Binding OtherPartId}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Classes="icon-btn"
+                                                Command="{Binding $parent[ItemsControl].((vm:PartEditorViewModel)DataContext).RemoveJointCommand}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip.Tip="Remove Joint">
+                                            <PathIcon Data="{StaticResource IconRemove}" Width="12" Height="12"
+                                                      Foreground="{DynamicResource ErrorBrush}"/>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="Ctrl+click two parts in the 3D view to add joints"
+                               FontSize="10" Classes="muted" TextWrapping="Wrap"/>
                 </StackPanel>
             </Border>
 
