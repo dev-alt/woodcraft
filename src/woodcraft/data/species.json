@@ -1,0 +1,124 @@
+{
+  "species": {
+    "red_oak": {
+      "name": "Red Oak",
+      "janka_hardness": 1290,
+      "density_lb_ft3": 44,
+      "workability": "good",
+      "grain": "prominent",
+      "common_uses": ["furniture", "cabinets", "flooring"],
+      "price_category": "medium",
+      "notes": "Most common hardwood in North America"
+    },
+    "white_oak": {
+      "name": "White Oak",
+      "janka_hardness": 1360,
+      "density_lb_ft3": 47,
+      "workability": "good",
+      "grain": "prominent",
+      "common_uses": ["furniture", "boats", "barrels", "outdoor"],
+      "price_category": "medium-high",
+      "notes": "Water resistant, good for outdoor use"
+    },
+    "hard_maple": {
+      "name": "Hard Maple",
+      "janka_hardness": 1450,
+      "density_lb_ft3": 44,
+      "workability": "moderate",
+      "grain": "fine",
+      "common_uses": ["cutting boards", "flooring", "workbenches"],
+      "price_category": "medium",
+      "notes": "Very hard, can burn when machining"
+    },
+    "soft_maple": {
+      "name": "Soft Maple",
+      "janka_hardness": 950,
+      "density_lb_ft3": 38,
+      "workability": "good",
+      "grain": "fine",
+      "common_uses": ["furniture", "cabinets", "turning"],
+      "price_category": "low-medium",
+      "notes": "Easier to work than hard maple"
+    },
+    "cherry": {
+      "name": "Cherry",
+      "janka_hardness": 950,
+      "density_lb_ft3": 35,
+      "workability": "excellent",
+      "grain": "fine",
+      "common_uses": ["fine furniture", "cabinets", "turning"],
+      "price_category": "high",
+      "notes": "Darkens with age and light exposure"
+    },
+    "walnut": {
+      "name": "Black Walnut",
+      "janka_hardness": 1010,
+      "density_lb_ft3": 38,
+      "workability": "excellent",
+      "grain": "prominent",
+      "common_uses": ["fine furniture", "gunstocks", "veneer"],
+      "price_category": "high",
+      "notes": "Premium American hardwood"
+    },
+    "poplar": {
+      "name": "Poplar",
+      "janka_hardness": 540,
+      "density_lb_ft3": 29,
+      "workability": "excellent",
+      "grain": "fine",
+      "common_uses": ["paint-grade furniture", "drawers", "utility"],
+      "price_category": "low",
+      "notes": "Soft hardwood, takes paint well"
+    },
+    "pine": {
+      "name": "Pine (Eastern White)",
+      "janka_hardness": 380,
+      "density_lb_ft3": 25,
+      "workability": "excellent",
+      "grain": "prominent",
+      "common_uses": ["construction", "shelving", "rustic furniture"],
+      "price_category": "low",
+      "notes": "Softwood, dents easily"
+    },
+    "douglas_fir": {
+      "name": "Douglas Fir",
+      "janka_hardness": 660,
+      "density_lb_ft3": 32,
+      "workability": "good",
+      "grain": "prominent",
+      "common_uses": ["construction", "plywood", "heavy timber"],
+      "price_category": "low",
+      "notes": "Strong softwood, good for structural"
+    },
+    "ash": {
+      "name": "Ash",
+      "janka_hardness": 1320,
+      "density_lb_ft3": 42,
+      "workability": "good",
+      "grain": "prominent",
+      "common_uses": ["tool handles", "furniture", "sports equipment"],
+      "price_category": "medium",
+      "notes": "Flexible and shock resistant"
+    },
+    "birch": {
+      "name": "Birch",
+      "janka_hardness": 1260,
+      "density_lb_ft3": 43,
+      "workability": "good",
+      "grain": "fine",
+      "common_uses": ["plywood", "cabinets", "furniture"],
+      "price_category": "medium",
+      "notes": "Common plywood face veneer"
+    },
+    "hickory": {
+      "name": "Hickory",
+      "janka_hardness": 1820,
+      "density_lb_ft3": 50,
+      "workability": "difficult",
+      "grain": "prominent",
+      "common_uses": ["tool handles", "flooring", "smoking wood"],
+      "price_category": "medium",
+      "notes": "Extremely hard and shock resistant"
+    }
+  }
+}

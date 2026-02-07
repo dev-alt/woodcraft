@@ -1,0 +1,92 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Woodcraft.Desktop.ViewModels"
+             x:Class="Woodcraft.Desktop.Views.BOMView"
+             x:DataType="vm:BOMViewModel"
+             x:CompileBindings="True">
+
+    <DockPanel>
+        <!-- Toolbar -->
+        <Border DockPanel.Dock="Top" Classes="toolbar">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                    <Button Classes="icon-btn" Command="{Binding GenerateCommand}" ToolTip.Tip="Generate BOM">
+                        <PathIcon Data="{StaticResource IconGenerate}" Width="14" Height="14"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding AddHardwareCommand}" ToolTip.Tip="Add Hardware">
+                        <PathIcon Data="{StaticResource IconHardware}" Width="14" Height="14"/>
+                    </Button>
+
+                    <Separator Classes="vertical"/>
+
+                    <Button Classes="ghost" Command="{Binding ExportCsvCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconExport}" Width="14" Height="14"/>
+                            <TextBlock Text="Export CSV"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- Total Cost Display -->
+                <Border Grid.Column="1"
+                        Background="{DynamicResource BackgroundLightBrush}"
+                        CornerRadius="4"
+                        Padding="12,6">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Total Cost:" VerticalAlignment="Center" Classes="muted"/>
+                        <TextBlock Text="{Binding TotalCost, StringFormat='${0:F2}'}"
+                                   VerticalAlignment="Center"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Loading -->
+        <ProgressBar DockPanel.Dock="Top" IsIndeterminate="True" IsVisible="{Binding IsGenerating}" Height="4"/>
+
+        <!-- BOM Table -->
+        <DataGrid ItemsSource="{Binding LineItems}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  GridLinesVisibility="Horizontal"
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="True"
+                  CanUserReorderColumns="True"
+                  SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Item" Binding="{Binding Name}" Width="180"/>
+                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
+                <DataGridTextColumn Header="Qty" Binding="{Binding Quantity, StringFormat=F2}" Width="70"/>
+                <DataGridTextColumn Header="Unit" Binding="{Binding Unit}" Width="70"/>
+                <DataGridTextColumn Header="Unit Cost" Binding="{Binding UnitCost, StringFormat='${0:F2}'}" Width="90"/>
+                <DataGridTextColumn Header="Total" Binding="{Binding TotalCost, StringFormat='${0:F2}'}" Width="90"/>
+                <DataGridTextColumn Header="Supplier" Binding="{Binding Supplier}" Width="120"/>
+                <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="150"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Empty State -->
+        <Border IsVisible="{Binding !LineItems.Count}"
+                Background="{DynamicResource BackgroundMediumBrush}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                <PathIcon Data="{StaticResource IconBOM}" Width="48" Height="48"
+                          Foreground="{DynamicResource TextTertiaryBrush}"/>
+                <TextBlock Text="No BOM data"
+                           FontSize="16"
+                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+                <TextBlock Text="Click 'Generate BOM' to create a bill of materials"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextDisabledBrush}"/>
+                <Button Classes="primary" Command="{Binding GenerateCommand}" Margin="0,8,0,0">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <PathIcon Data="{StaticResource IconGenerate}" Width="14" Height="14"/>
+                        <TextBlock Text="Generate BOM"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Border>
+    </DockPanel>
+</UserControl>

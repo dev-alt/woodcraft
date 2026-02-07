@@ -1,0 +1,148 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Woodcraft.Desktop.ViewModels"
+        x:Class="Woodcraft.Desktop.Views.NewProjectDialog"
+        x:DataType="vm:NewProjectDialogViewModel"
+        x:CompileBindings="True"
+        Title="New Project"
+        Width="560" Height="580"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="{DynamicResource BackgroundDarkBrush}">
+
+    <Window.Styles>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+        <Style Selector="ListBoxItem:pointerover">
+            <Setter Property="Background" Value="{DynamicResource BackgroundLighterBrush}"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected">
+            <Setter Property="Background" Value="{DynamicResource AccentPrimaryBrush}"/>
+        </Style>
+    </Window.Styles>
+
+    <DockPanel Margin="24">
+        <!-- Header -->
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,20">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <PathIcon Data="{StaticResource IconNew}" Width="28" Height="28"
+                          Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                <TextBlock Text="Create New Project" FontSize="22" FontWeight="SemiBold"/>
+            </StackPanel>
+            <TextBlock Text="Start a new woodworking project" Classes="muted" Margin="40,6,0,0"/>
+        </StackPanel>
+
+        <!-- Validation Error -->
+        <Border DockPanel.Dock="Top"
+                IsVisible="{Binding ValidationError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                Background="{DynamicResource ErrorBrush}"
+                CornerRadius="4"
+                Padding="12,8"
+                Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Data="{StaticResource IconError}" Width="16" Height="16" Foreground="White"/>
+                <TextBlock Text="{Binding ValidationError}" Foreground="White"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Footer Buttons -->
+        <Border DockPanel.Dock="Bottom"
+                BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="0,20,0,0"
+                Margin="0,20,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+                <Button Content="Cancel" Command="{Binding CancelCommand}" Padding="24,10"/>
+                <Button Command="{Binding CreateCommand}" Classes="primary" Padding="24,10">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconAdd}" Width="14" Height="14"/>
+                        <TextBlock Text="Create Project"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- Content -->
+        <ScrollViewer>
+            <StackPanel Spacing="16">
+                <!-- Project Name -->
+                <Border Classes="card">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <PathIcon Data="{StaticResource IconEdit}" Width="14" Height="14"
+                                      Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                            <TextBlock Text="Project Name" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <TextBox Text="{Binding ProjectName}" Watermark="Enter project name..." FontSize="14"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Templates -->
+                <Border Classes="card">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <PathIcon Data="{StaticResource IconPreset}" Width="14" Height="14"
+                                      Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                            <TextBlock Text="Start From Template" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <TextBlock Text="Choose a template to get started quickly" Classes="label"/>
+
+                        <ListBox ItemsSource="{Binding Templates}"
+                                 SelectedItem="{Binding SelectedTemplate}"
+                                 MaxHeight="180">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding Description}" FontSize="11" Classes="muted" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+
+                <!-- Settings -->
+                <Border Classes="card">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <PathIcon Data="{StaticResource IconSettings}" Width="14" Height="14"
+                                      Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                            <TextBlock Text="Project Settings" FontWeight="SemiBold"/>
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*,16,*" RowDefinitions="Auto,Auto">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Units" Classes="label"/>
+                            <TextBlock Grid.Row="0" Grid.Column="2" Text="Default Material" Classes="label"/>
+
+                            <ComboBox Grid.Row="1" Grid.Column="0" ItemsSource="{Binding UnitOptions}"
+                                      SelectedItem="{Binding Units}"/>
+                            <ComboBox Grid.Row="1" Grid.Column="2" ItemsSource="{Binding Materials}"
+                                      SelectedItem="{Binding DefaultMaterial}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Description (optional) -->
+                <Border Classes="card">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <PathIcon Data="{StaticResource IconInfo}" Width="14" Height="14"
+                                      Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                            <TextBlock Text="Description (Optional)" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <TextBox Text="{Binding Description}"
+                                 Watermark="Add notes about this project..."
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 Height="60"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

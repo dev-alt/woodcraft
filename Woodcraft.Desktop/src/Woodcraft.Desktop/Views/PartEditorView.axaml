@@ -1,0 +1,186 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Woodcraft.Desktop.ViewModels"
+             x:Class="Woodcraft.Desktop.Views.PartEditorView"
+             x:DataType="vm:PartEditorViewModel"
+             x:CompileBindings="True">
+
+    <Panel>
+        <!-- Empty State when no part selected -->
+        <Border IsVisible="{Binding Part, Converter={x:Static ObjectConverters.IsNull}}"
+                Margin="12">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
+                <PathIcon Data="{StaticResource IconEdit}" Width="40" Height="40"
+                          Foreground="{DynamicResource TextTertiaryBrush}"
+                          HorizontalAlignment="Center"/>
+                <TextBlock Text="No Part Selected"
+                           FontSize="14" FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                <TextBlock Text="Select a part from the project tree to edit its properties"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           FontSize="11"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           MaxWidth="200"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Part Editor (shown when part is selected) -->
+        <ScrollViewer IsVisible="{Binding Part, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <StackPanel Margin="12" Spacing="12">
+
+            <!-- Part Identification Card -->
+            <Border Classes="card">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconInfo}" Width="14" Height="14"
+                                  Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                        <TextBlock Text="Identification" Classes="subheading"/>
+                    </StackPanel>
+
+                    <Separator Margin="-12,4,-12,4"/>
+
+                    <!-- Part ID -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Part ID" Classes="label"/>
+                        <TextBox Text="{Binding PartId}" IsReadOnly="True" Classes="readonly"/>
+                    </StackPanel>
+
+                    <!-- Part Type -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Type" Classes="label"/>
+                        <ComboBox ItemsSource="{Binding PartTypes}"
+                                  SelectedItem="{Binding PartType}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Dimensions Card -->
+            <Border Classes="card">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconDimension}" Width="14" Height="14"
+                                  Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                        <TextBlock Text="Dimensions" Classes="subheading"/>
+                    </StackPanel>
+
+                    <Separator Margin="-12,4,-12,4"/>
+
+                    <Grid ColumnDefinitions="*,8,*,8,*" RowDefinitions="Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Length" Classes="label"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Width" Classes="label"/>
+                        <TextBlock Grid.Row="0" Grid.Column="4" Text="Thickness" Classes="label"/>
+
+                        <NumericUpDown Grid.Row="1" Grid.Column="0" Value="{Binding Length}" Minimum="0.1" Increment="0.25" FormatString="F3"/>
+                        <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding Width}" Minimum="0.1" Increment="0.25" FormatString="F3"/>
+                        <NumericUpDown Grid.Row="1" Grid.Column="4" Value="{Binding Thickness}" Minimum="0.1" Increment="0.125" FormatString="F3"/>
+                    </Grid>
+
+                    <!-- Quick Thickness Presets -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Common Thicknesses" Classes="label" Margin="0,4,0,0"/>
+                        <WrapPanel Orientation="Horizontal">
+                            <Button Content="1/4&quot;" Classes="chip" Command="{Binding SetThicknessCommand}" CommandParameter="1/4" Margin="2"/>
+                            <Button Content="3/8&quot;" Classes="chip" Command="{Binding SetThicknessCommand}" CommandParameter="3/8" Margin="2"/>
+                            <Button Content="1/2&quot;" Classes="chip" Command="{Binding SetThicknessCommand}" CommandParameter="1/2" Margin="2"/>
+                            <Button Content="5/8&quot;" Classes="chip" Command="{Binding SetThicknessCommand}" CommandParameter="5/8" Margin="2"/>
+                            <Button Content="3/4&quot;" Classes="chip" Command="{Binding SetThicknessCommand}" CommandParameter="3/4" Margin="2"/>
+                            <Button Content="1&quot;" Classes="chip" Command="{Binding SetThicknessCommand}" CommandParameter="1" Margin="2"/>
+                        </WrapPanel>
+                    </StackPanel>
+
+                    <!-- Quantity -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Quantity" Classes="label"/>
+                        <NumericUpDown Value="{Binding Quantity}" Minimum="1" Maximum="100" Increment="1"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Material Card -->
+            <Border Classes="card">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconMaterial}" Width="14" Height="14"
+                                  Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                        <TextBlock Text="Material" Classes="subheading"/>
+                    </StackPanel>
+
+                    <Separator Margin="-12,4,-12,4"/>
+
+                    <!-- Material Selection -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Wood Species" Classes="label"/>
+                        <ComboBox ItemsSource="{Binding Materials}"
+                                  SelectedItem="{Binding Material}"/>
+                    </StackPanel>
+
+                    <!-- Grain Direction -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Grain Direction" Classes="label"/>
+                        <ComboBox ItemsSource="{Binding GrainDirections}"
+                                  SelectedItem="{Binding GrainDirection}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Notes Card -->
+            <Border Classes="card">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconEdit}" Width="14" Height="14"
+                                  Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                        <TextBlock Text="Notes" Classes="subheading"/>
+                    </StackPanel>
+
+                    <Separator Margin="-12,4,-12,4"/>
+
+                    <TextBox Text="{Binding Notes}"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             Height="80"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Quick Presets -->
+            <Expander Margin="0,4,0,0">
+                <Expander.Header>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconPreset}" Width="14" Height="14"
+                                  Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <TextBlock Text="Quick Presets"/>
+                    </StackPanel>
+                </Expander.Header>
+                <WrapPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Button Content="Shelf" Classes="chip" Command="{Binding SetPresetCommand}" CommandParameter="shelf" Margin="2"/>
+                    <Button Content="Side Panel" Classes="chip" Command="{Binding SetPresetCommand}" CommandParameter="side" Margin="2"/>
+                    <Button Content="Drawer Front" Classes="chip" Command="{Binding SetPresetCommand}" CommandParameter="drawer_front" Margin="2"/>
+                    <Button Content="Back Panel" Classes="chip" Command="{Binding SetPresetCommand}" CommandParameter="back_panel" Margin="2"/>
+                </WrapPanel>
+            </Expander>
+
+            <!-- Action Buttons -->
+            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                <Button Content="Apply" Command="{Binding ApplyChangesCommand}" Classes="primary" Padding="16,8">
+                    <Button.ContentTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <PathIcon Data="{StaticResource IconCheck}" Width="14" Height="14"/>
+                                <TextBlock Text="Apply"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </Button.ContentTemplate>
+                </Button>
+                <Button Command="{Binding ResetChangesCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <PathIcon Data="{StaticResource IconRefresh}" Width="14" Height="14"/>
+                        <TextBlock Text="Reset"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+    </Panel>
+</UserControl>

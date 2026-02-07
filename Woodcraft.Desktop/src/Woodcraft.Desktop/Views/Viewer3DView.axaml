@@ -1,0 +1,215 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Woodcraft.Desktop.ViewModels"
+             x:Class="Woodcraft.Desktop.Views.Viewer3DView"
+             x:DataType="vm:Viewer3DViewModel"
+             x:CompileBindings="True">
+
+    <DockPanel>
+        <!-- Toolbar -->
+        <Border DockPanel.Dock="Top" Classes="toolbar">
+            <Grid ColumnDefinitions="*,Auto">
+                <!-- Left: View Controls -->
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                    <Button Classes="icon-btn" Command="{Binding RefreshModelsCommand}" ToolTip.Tip="Refresh">
+                        <PathIcon Data="{StaticResource IconRefresh}" Width="14" Height="14"/>
+                    </Button>
+
+                    <Separator Classes="vertical"/>
+
+                    <!-- View Presets -->
+                    <Button Classes="icon-btn" Command="{Binding ViewFrontCommand}" ToolTip.Tip="Front View">
+                        <PathIcon Data="{StaticResource IconViewFront}" Width="14" Height="14"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding ViewTopCommand}" ToolTip.Tip="Top View">
+                        <PathIcon Data="{StaticResource IconViewTop}" Width="14" Height="14"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding ViewSideCommand}" ToolTip.Tip="Side View">
+                        <PathIcon Data="{StaticResource IconViewSide}" Width="14" Height="14"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding ViewIsometricCommand}" ToolTip.Tip="Isometric View">
+                        <PathIcon Data="{StaticResource IconViewIsometric}" Width="14" Height="14"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding ResetCameraCommand}" ToolTip.Tip="Reset Camera">
+                        <PathIcon Data="{StaticResource IconZoomFit}" Width="14" Height="14"/>
+                    </Button>
+
+                    <Separator Classes="vertical"/>
+
+                    <!-- View Options -->
+                    <CheckBox Content="Exploded" IsChecked="{Binding ShowExploded}" Margin="4,0"/>
+                    <CheckBox Content="Wireframe" IsChecked="{Binding ShowWireframe}" Margin="4,0"/>
+                    <CheckBox Content="Dimensions" IsChecked="{Binding ShowDimensions}" Margin="4,0"/>
+                </StackPanel>
+
+                <!-- Right: Export -->
+                <Button Grid.Column="1" Classes="ghost" Command="{Binding ExportStlCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <PathIcon Data="{StaticResource IconExport}" Width="14" Height="14"/>
+                        <TextBlock Text="Export STL"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Loading indicator -->
+        <Border IsVisible="{Binding IsLoading}"
+                Background="{DynamicResource OverlayBackgroundBrush}"
+                ZIndex="100">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                <ProgressBar IsIndeterminate="True" Width="200"/>
+                <TextBlock Text="Loading models..." HorizontalAlignment="Center"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 3D Viewport -->
+        <Border Classes="viewport">
+            <Grid>
+                <!-- Grid Background Pattern -->
+                <Canvas ClipToBounds="True">
+                    <Canvas.Background>
+                        <VisualBrush TileMode="Tile" Stretch="None"
+                                     SourceRect="0,0,50,50" DestinationRect="0,0,50,50">
+                            <VisualBrush.Visual>
+                                <Canvas Width="50" Height="50">
+                                    <Line StartPoint="0,0" EndPoint="50,0"
+                                          Stroke="{DynamicResource GridLineMinorBrush}" StrokeThickness="1"/>
+                                    <Line StartPoint="0,0" EndPoint="0,50"
+                                          Stroke="{DynamicResource GridLineMinorBrush}" StrokeThickness="1"/>
+                                </Canvas>
+                            </VisualBrush.Visual>
+                        </VisualBrush>
+                    </Canvas.Background>
+                </Canvas>
+
+                <!-- Viewport Canvas for 3D content -->
+                <Canvas x:Name="ViewportCanvas" ClipToBounds="True"/>
+
+                <!-- Part info overlay -->
+                <Border Background="{DynamicResource BackgroundLightBrush}"
+                        Padding="12"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Margin="12"
+                        CornerRadius="6"
+                        BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                        BorderThickness="1"
+                        IsVisible="{Binding SelectedPart, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <StackPanel Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <PathIcon Data="{StaticResource IconPart}" Width="14" Height="14"
+                                      Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                            <TextBlock Text="{Binding SelectedPart.Id}" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <TextBlock Classes="muted" FontSize="11">
+                            <Run Text="{Binding SelectedPart.Dimensions.Length}"/>
+                            <Run Text="x"/>
+                            <Run Text="{Binding SelectedPart.Dimensions.Width}"/>
+                            <Run Text="x"/>
+                            <Run Text="{Binding SelectedPart.Dimensions.Thickness}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- Camera info -->
+                <Border Background="{DynamicResource BackgroundLightBrush}"
+                        Padding="8"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="12"
+                        CornerRadius="4"
+                        BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                        BorderThickness="1"
+                        Opacity="0.9">
+                    <StackPanel Spacing="2">
+                        <TextBlock FontSize="10" Classes="muted">
+                            <Run Text="Zoom:"/>
+                            <Run Text="{Binding CameraDistance, StringFormat=F0}"/>
+                        </TextBlock>
+                        <TextBlock FontSize="10" Classes="muted">
+                            <Run Text="Rotation:"/>
+                            <Run Text="{Binding CameraRotationX, StringFormat=F0}"/>
+                            <Run Text=","/>
+                            <Run Text="{Binding CameraRotationY, StringFormat=F0}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- No project message -->
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding Project, Converter={x:Static ObjectConverters.IsNull}}">
+                    <PathIcon Data="{StaticResource IconCube}" Width="48" Height="48"
+                              Foreground="{DynamicResource TextTertiaryBrush}" Margin="0,0,0,12"/>
+                    <TextBlock Text="No project loaded"
+                               FontSize="16"
+                               Foreground="{DynamicResource TextTertiaryBrush}"/>
+                    <TextBlock Text="Create or open a project to view 3D models"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextDisabledBrush}"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- Part visualization (wood grain effect) -->
+                <ItemsControl ItemsSource="{Binding Models}"
+                              IsVisible="{Binding Project, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Width="{Binding SizeX}"
+                                    Height="{Binding SizeY}"
+                                    Canvas.Left="{Binding PositionX}"
+                                    Canvas.Top="{Binding PositionY}"
+                                    CornerRadius="2"
+                                    BoxShadow="2 2 8 0 #40000000">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                        <GradientStop Color="#CD853F" Offset="0"/>
+                                        <GradientStop Color="#DEB887" Offset="0.25"/>
+                                        <GradientStop Color="#D2691E" Offset="0.5"/>
+                                        <GradientStop Color="#DEB887" Offset="0.75"/>
+                                        <GradientStop Color="#CD853F" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <Border BorderBrush="#8B4513"
+                                        BorderThickness="2"
+                                        CornerRadius="2">
+                                    <!-- Selection highlight overlay -->
+                                    <Panel>
+                                        <Border Background="{DynamicResource AccentPrimaryBrush}"
+                                                Opacity="0.3"
+                                                IsVisible="{Binding IsSelected}"
+                                                CornerRadius="1"/>
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Part.Id}"
+                                                       HorizontalAlignment="Center"
+                                                       Foreground="White"
+                                                       FontSize="10"
+                                                       FontWeight="SemiBold">
+                                                <TextBlock.Effect>
+                                                    <DropShadowEffect Color="Black" BlurRadius="2" OffsetX="1" OffsetY="1"/>
+                                                </TextBlock.Effect>
+                                            </TextBlock>
+                                            <TextBlock HorizontalAlignment="Center"
+                                                       Foreground="#CCFFFFFF"
+                                                       FontSize="8">
+                                                <Run Text="{Binding SizeX, StringFormat={}{0:F1}}"/>
+                                                <Run Text="x"/>
+                                                <Run Text="{Binding SizeY, StringFormat={}{0:F1}}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Panel>
+                                </Border>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </Border>
+    </DockPanel>
+</UserControl>

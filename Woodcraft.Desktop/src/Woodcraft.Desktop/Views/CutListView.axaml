@@ -1,0 +1,250 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Woodcraft.Desktop.ViewModels"
+             x:Class="Woodcraft.Desktop.Views.CutListView"
+             x:DataType="vm:CutListViewModel"
+             x:CompileBindings="True">
+
+    <DockPanel>
+        <!-- Settings Panel -->
+        <Border DockPanel.Dock="Left" Width="280" Classes="panel">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Classes="panel-header">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconSettings}" Width="14" Height="14"
+                                  Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                        <TextBlock Text="Settings" Classes="panel-title"/>
+                    </StackPanel>
+                </Border>
+
+                <ScrollViewer>
+                    <StackPanel Margin="12" Spacing="16">
+
+                        <!-- Stock Settings Card -->
+                        <Border Classes="card">
+                            <StackPanel Spacing="8">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <PathIcon Data="{StaticResource IconDimension}" Width="14" Height="14"
+                                              Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                                    <TextBlock Text="Stock Dimensions" Classes="subheading"/>
+                                </StackPanel>
+
+                                <Separator Margin="-12,4,-12,4"/>
+
+                                <Grid ColumnDefinitions="*,8,*" RowDefinitions="Auto,Auto">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Length" Classes="label"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Width" Classes="label"/>
+
+                                    <NumericUpDown Grid.Row="1" Grid.Column="0" Value="{Binding StockLength}" Minimum="1" Increment="12" FormatString="F0"/>
+                                    <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding StockWidth}" Minimum="1" Increment="12" FormatString="F0"/>
+                                </Grid>
+                                <TextBlock Text="Length x Width (inches)" Classes="label"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Presets Card -->
+                        <Border Classes="card">
+                            <StackPanel Spacing="8">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <PathIcon Data="{StaticResource IconPreset}" Width="14" Height="14"
+                                              Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                                    <TextBlock Text="Stock Presets" Classes="subheading"/>
+                                </StackPanel>
+
+                                <Separator Margin="-12,4,-12,4"/>
+
+                                <ItemsControl ItemsSource="{Binding StockPresets}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Spacing="4"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Content="{Binding Name}"
+                                                    Classes="ghost"
+                                                    Command="{Binding $parent[UserControl].((vm:CutListViewModel)DataContext).ApplyPresetCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Left"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Material & Cut Settings -->
+                        <Border Classes="card">
+                            <StackPanel Spacing="8">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <PathIcon Data="{StaticResource IconMaterial}" Width="14" Height="14"
+                                              Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                                    <TextBlock Text="Material" Classes="subheading"/>
+                                </StackPanel>
+
+                                <Separator Margin="-12,4,-12,4"/>
+
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Wood Species" Classes="label"/>
+                                    <ComboBox ItemsSource="{Binding Materials}"
+                                              SelectedItem="{Binding StockMaterial}"/>
+                                </StackPanel>
+
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Thickness" Classes="label"/>
+                                    <NumericUpDown Value="{Binding StockThickness}" Minimum="0.125" Increment="0.125" FormatString="F3"/>
+                                </StackPanel>
+
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="Blade Kerf" Classes="label"/>
+                                    <NumericUpDown Value="{Binding Kerf}" Minimum="0" Maximum="0.5" Increment="0.03125" FormatString="F4"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Generate Button -->
+                        <Button Command="{Binding GenerateCommand}"
+                                Classes="primary"
+                                HorizontalAlignment="Stretch"
+                                Padding="12,10">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <PathIcon Data="{StaticResource IconGenerate}" Width="16" Height="16"/>
+                                <TextBlock Text="Generate Cut List" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Results Summary -->
+                        <Border Classes="info-box"
+                                IsVisible="{Binding Result, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <StackPanel Spacing="8">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <PathIcon Data="{StaticResource IconCheck}" Width="14" Height="14"
+                                              Foreground="{DynamicResource SuccessBrush}"/>
+                                    <TextBlock Text="Results" FontWeight="SemiBold"/>
+                                </StackPanel>
+
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Sheets needed:" Classes="muted"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Result.Sheets.Count}" FontWeight="SemiBold"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Waste:" Classes="muted"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" FontWeight="SemiBold">
+                                        <Run Text="{Binding Result.WastePercentage, StringFormat=F1}"/>
+                                        <Run Text="%"/>
+                                    </TextBlock>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Export Buttons -->
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Command="{Binding ExportSvgCommand}" Classes="ghost">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <PathIcon Data="{StaticResource IconExport}" Width="14" Height="14"/>
+                                    <TextBlock Text="SVG"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <!-- Cut List Visualization -->
+        <Border Classes="viewport">
+            <Grid>
+                <!-- Loading -->
+                <StackPanel IsVisible="{Binding IsGenerating}"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Spacing="12">
+                    <ProgressBar IsIndeterminate="True" Width="200"/>
+                    <TextBlock Text="Optimizing cut layout..." HorizontalAlignment="Center" Classes="muted"/>
+                </StackPanel>
+
+                <!-- Diagram Display -->
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="24" HorizontalAlignment="Center" VerticalAlignment="Top">
+                        <TextBlock Text="Cut List Diagram" Classes="heading" Margin="0,0,0,16"/>
+
+                        <!-- Sheet layouts -->
+                        <ItemsControl ItemsSource="{Binding Result.Sheets}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="24"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Classes="muted" FontSize="11">
+                                            <Run Text="Sheet:"/>
+                                            <Run Text="{Binding Stock.Length}"/>
+                                            <Run Text="x"/>
+                                            <Run Text="{Binding Stock.Width}"/>
+                                            <Run Text="("/>
+                                            <Run Text="{Binding Stock.Material}"/>
+                                            <Run Text=")"/>
+                                        </TextBlock>
+                                    <Border BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                            BorderThickness="2"
+                                            CornerRadius="4"
+                                            BoxShadow="0 2 8 0 #40000000">
+                                        <Canvas Width="{Binding Stock.Length}" Height="{Binding Stock.Width}"
+                                                RenderTransformOrigin="0,0">
+                                            <Canvas.RenderTransform>
+                                                <ScaleTransform ScaleX="6" ScaleY="6"/>
+                                            </Canvas.RenderTransform>
+                                            <Canvas.Background>
+                                                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                                    <GradientStop Color="#F5F0E6" Offset="0"/>
+                                                    <GradientStop Color="#F5F5DC" Offset="0.5"/>
+                                                    <GradientStop Color="#F5F0E6" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Canvas.Background>
+                                            <ItemsControl ItemsSource="{Binding Pieces}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <Canvas/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Background="{DynamicResource SuccessLightBrush}"
+                                                                BorderBrush="{DynamicResource SuccessBrush}"
+                                                                BorderThickness="1"
+                                                                Width="{Binding Width}"
+                                                                Height="{Binding Height}"
+                                                                Canvas.Left="{Binding X}"
+                                                                Canvas.Top="{Binding Y}"
+                                                                CornerRadius="2">
+                                                            <TextBlock Text="{Binding Label}"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"
+                                                                       FontSize="10"
+                                                                       Foreground="{DynamicResource BackgroundDarkBrush}"/>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Canvas>
+                                    </Border>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- No results message -->
+                        <StackPanel IsVisible="{Binding Result, Converter={x:Static ObjectConverters.IsNull}}"
+                                    HorizontalAlignment="Center" Margin="0,40,0,0">
+                            <PathIcon Data="{StaticResource IconCutList}" Width="48" Height="48"
+                                      Foreground="{DynamicResource TextTertiaryBrush}" Margin="0,0,0,12"/>
+                            <TextBlock Text="Click 'Generate Cut List' to see optimization results"
+                                       FontSize="14"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </DockPanel>
+</UserControl>

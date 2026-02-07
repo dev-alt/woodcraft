@@ -1,0 +1,227 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Woodcraft.Desktop.ViewModels"
+             x:Class="Woodcraft.Desktop.Views.DrawingView"
+             x:DataType="vm:DrawingViewModel"
+             x:CompileBindings="True">
+
+    <DockPanel>
+        <!-- Toolbar -->
+        <Border DockPanel.Dock="Top" Classes="toolbar">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                    <Button Classes="icon-btn" Command="{Binding GenerateCommand}" ToolTip.Tip="Regenerate Drawing">
+                        <PathIcon Data="{StaticResource IconRefresh}" Width="14" Height="14"/>
+                    </Button>
+
+                    <Separator Classes="vertical"/>
+
+                    <!-- View Toggles -->
+                    <CheckBox Content="Top" IsChecked="{Binding ShowTopView}" Margin="4,0"/>
+                    <CheckBox Content="Front" IsChecked="{Binding ShowFrontView}" Margin="4,0"/>
+                    <CheckBox Content="Side" IsChecked="{Binding ShowSideView}" Margin="4,0"/>
+
+                    <Separator Classes="vertical"/>
+
+                    <!-- Scale -->
+                    <TextBlock Text="Scale:" VerticalAlignment="Center" Classes="muted" Margin="4,0"/>
+                    <ComboBox ItemsSource="{Binding Scales}"
+                              SelectedItem="{Binding Scale}"
+                              Width="80" VerticalAlignment="Center"/>
+
+                    <Separator Classes="vertical"/>
+
+                    <!-- Format -->
+                    <TextBlock Text="Format:" VerticalAlignment="Center" Classes="muted" Margin="4,0"/>
+                    <ComboBox ItemsSource="{Binding OutputFormats}"
+                              SelectedItem="{Binding OutputFormat}"
+                              Width="80" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Export Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                    <Button Classes="ghost" Command="{Binding ExportSvgCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconExport}" Width="14" Height="14"/>
+                            <TextBlock Text="SVG"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="ghost" Command="{Binding ExportDxfCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconExport}" Width="14" Height="14"/>
+                            <TextBlock Text="DXF"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Loading -->
+        <ProgressBar DockPanel.Dock="Top" IsIndeterminate="True" IsVisible="{Binding IsGenerating}" Height="4"/>
+
+        <!-- Drawing Display - Paper Background -->
+        <Border Classes="viewport">
+            <Grid>
+                <!-- Blueprint Grid Pattern Background -->
+                <Canvas ClipToBounds="True">
+                    <Canvas.Background>
+                        <VisualBrush TileMode="Tile" Stretch="None"
+                                     SourceRect="0,0,25,25" DestinationRect="0,0,25,25">
+                            <VisualBrush.Visual>
+                                <Canvas Width="25" Height="25" Background="{DynamicResource ViewportBackgroundBrush}">
+                                    <Line StartPoint="0,0" EndPoint="25,0"
+                                          Stroke="{DynamicResource GridLineMinorBrush}" StrokeThickness="0.5"/>
+                                    <Line StartPoint="0,0" EndPoint="0,25"
+                                          Stroke="{DynamicResource GridLineMinorBrush}" StrokeThickness="0.5"/>
+                                </Canvas>
+                            </VisualBrush.Visual>
+                        </VisualBrush>
+                    </Canvas.Background>
+                </Canvas>
+
+                <!-- No part selected -->
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding SelectedPart, Converter={x:Static ObjectConverters.IsNull}}">
+                    <PathIcon Data="{StaticResource IconDrawing}" Width="48" Height="48"
+                              Foreground="{DynamicResource TextTertiaryBrush}" Margin="0,0,0,12"/>
+                    <TextBlock Text="Select a part to view its drawing"
+                               FontSize="16"
+                               Foreground="{DynamicResource TextTertiaryBrush}"/>
+                    <TextBlock Text="Choose a part from the project tree"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextDisabledBrush}"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- Drawing content -->
+                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto"
+                              IsVisible="{Binding SelectedPart, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <StackPanel Margin="40" HorizontalAlignment="Center">
+                        <!-- Part Title Block -->
+                        <Border Background="{DynamicResource BackgroundLightBrush}"
+                                BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                BorderThickness="2"
+                                CornerRadius="4"
+                                Padding="16"
+                                Margin="0,0,0,24"
+                                BoxShadow="0 2 8 0 #40000000">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Spacing="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <PathIcon Data="{StaticResource IconPart}" Width="16" Height="16"
+                                                  Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                                        <TextBlock Text="{Binding SelectedPart.Id}" Classes="heading"/>
+                                    </StackPanel>
+                                    <TextBlock Classes="muted">
+                                        <Run Text="Dimensions:"/>
+                                        <Run Text="{Binding SelectedPart.Dimensions.Length}"/>
+                                        <Run Text="x"/>
+                                        <Run Text="{Binding SelectedPart.Dimensions.Width}"/>
+                                        <Run Text="x"/>
+                                        <Run Text="{Binding SelectedPart.Dimensions.Thickness}"/>
+                                        <Run Text="inches"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                    <TextBlock Text="{Binding Scale, StringFormat='Scale: {0}'}"
+                                               FontSize="10" Classes="muted"/>
+                                    <TextBlock Text="WOODCRAFT"
+                                               FontSize="10" FontWeight="Bold"
+                                               Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Views Grid -->
+                        <Grid ColumnDefinitions="Auto,40,Auto" RowDefinitions="Auto,40,Auto">
+                            <!-- Top View -->
+                            <Border Grid.Row="0" Grid.Column="0"
+                                    Background="{DynamicResource BackgroundMediumBrush}"
+                                    BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                    BorderThickness="2"
+                                    CornerRadius="4"
+                                    IsVisible="{Binding ShowTopView}"
+                                    Padding="24"
+                                    BoxShadow="0 2 8 0 #40000000">
+                                <StackPanel>
+                                    <TextBlock Text="TOP VIEW" FontWeight="Bold"
+                                               HorizontalAlignment="Center" Margin="0,0,0,12"
+                                               Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                                    <Border BorderBrush="{DynamicResource TextPrimaryBrush}"
+                                            BorderThickness="2"
+                                            Width="{Binding SelectedPart.Dimensions.Length, FallbackValue=100}"
+                                            Height="{Binding SelectedPart.Dimensions.Width, FallbackValue=50}"
+                                            Background="{DynamicResource BackgroundLightBrush}">
+                                        <!-- Dimension lines would be drawn here -->
+                                    </Border>
+                                    <TextBlock HorizontalAlignment="Center" Margin="0,10,0,0"
+                                               FontFamily="Consolas, monospace" FontSize="11">
+                                        <Run Text="{Binding SelectedPart.Dimensions.Length}"/>
+                                        <Run Text="x"/>
+                                        <Run Text="{Binding SelectedPart.Dimensions.Width}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Front View -->
+                            <Border Grid.Row="0" Grid.Column="2"
+                                    Background="{DynamicResource BackgroundMediumBrush}"
+                                    BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                    BorderThickness="2"
+                                    CornerRadius="4"
+                                    IsVisible="{Binding ShowFrontView}"
+                                    Padding="24"
+                                    BoxShadow="0 2 8 0 #40000000">
+                                <StackPanel>
+                                    <TextBlock Text="FRONT VIEW" FontWeight="Bold"
+                                               HorizontalAlignment="Center" Margin="0,0,0,12"
+                                               Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                                    <Border BorderBrush="{DynamicResource TextPrimaryBrush}"
+                                            BorderThickness="2"
+                                            Width="{Binding SelectedPart.Dimensions.Length, FallbackValue=100}"
+                                            Height="{Binding SelectedPart.Dimensions.Thickness, FallbackValue=20}"
+                                            Background="{DynamicResource BackgroundLightBrush}"/>
+                                    <TextBlock HorizontalAlignment="Center" Margin="0,10,0,0"
+                                               FontFamily="Consolas, monospace" FontSize="11">
+                                        <Run Text="{Binding SelectedPart.Dimensions.Length}"/>
+                                        <Run Text="x"/>
+                                        <Run Text="{Binding SelectedPart.Dimensions.Thickness}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Side View -->
+                            <Border Grid.Row="2" Grid.Column="0"
+                                    Background="{DynamicResource BackgroundMediumBrush}"
+                                    BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                                    BorderThickness="2"
+                                    CornerRadius="4"
+                                    IsVisible="{Binding ShowSideView}"
+                                    Padding="24"
+                                    BoxShadow="0 2 8 0 #40000000">
+                                <StackPanel>
+                                    <TextBlock Text="SIDE VIEW" FontWeight="Bold"
+                                               HorizontalAlignment="Center" Margin="0,0,0,12"
+                                               Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                                    <Border BorderBrush="{DynamicResource TextPrimaryBrush}"
+                                            BorderThickness="2"
+                                            Width="{Binding SelectedPart.Dimensions.Width, FallbackValue=50}"
+                                            Height="{Binding SelectedPart.Dimensions.Thickness, FallbackValue=20}"
+                                            Background="{DynamicResource BackgroundLightBrush}"/>
+                                    <TextBlock HorizontalAlignment="Center" Margin="0,10,0,0"
+                                               FontFamily="Consolas, monospace" FontSize="11">
+                                        <Run Text="{Binding SelectedPart.Dimensions.Width}"/>
+                                        <Run Text="x"/>
+                                        <Run Text="{Binding SelectedPart.Dimensions.Thickness}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </DockPanel>
+</UserControl>

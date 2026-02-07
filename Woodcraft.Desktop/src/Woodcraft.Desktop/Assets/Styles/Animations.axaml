@@ -1,0 +1,158 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         WOODCRAFT ANIMATIONS & TRANSITIONS
+         Smooth, professional CAD-style interactions
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         BUTTON TRANSITIONS
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Base Button Transitions -->
+    <Style Selector="Button">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         BORDER/PANEL TRANSITIONS
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <Style Selector="Border.animated">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.2"/>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2"/>
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- Card hover effect -->
+    <Style Selector="Border.card">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2"/>
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="Border.card:pointerover">
+        <Setter Property="BoxShadow" Value="0 4 12 0 #40000000"/>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         TREE VIEW ITEM TRANSITIONS
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <Style Selector="TreeViewItem">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.1"/>
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         INPUT CONTROL TRANSITIONS
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <Style Selector="TextBox">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="ComboBox">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="NumericUpDown">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         TAB CONTROL TRANSITIONS
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <Style Selector="TabItem">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Foreground" Duration="0:0:0.15"/>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         DATA GRID TRANSITIONS
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <Style Selector="DataGridRow">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.1"/>
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         STATUS INDICATOR
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <Style Selector="Ellipse.status-dot">
+        <Setter Property="Fill" Value="{DynamicResource ErrorBrush}"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Fill" Duration="0:0:0.3"/>
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="Ellipse.status-dot.connected">
+        <Setter Property="Fill" Value="{DynamicResource SuccessBrush}"/>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         PROGRESS BAR
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <Style Selector="ProgressBar">
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Value" Duration="0:0:0.3"/>
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         EXPANDER
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <Style Selector="Expander">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+
+</Styles>

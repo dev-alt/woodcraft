@@ -1,0 +1,80 @@
+{
+  "fasteners": {
+    "wood_screws": {
+      "types": ["flat_head", "pan_head", "round_head", "trim_head"],
+      "common_sizes": [
+        {"gauge": 6, "lengths": [0.5, 0.625, 0.75, 1.0, 1.25, 1.5]},
+        {"gauge": 8, "lengths": [0.75, 1.0, 1.25, 1.5, 2.0, 2.5]},
+        {"gauge": 10, "lengths": [1.0, 1.5, 2.0, 2.5, 3.0]}
+      ],
+      "materials": ["zinc", "brass", "stainless", "black_oxide"]
+    },
+    "pocket_screws": {
+      "common_sizes": [
+        {"material_thickness": 0.5, "screw_length": 1.0},
+        {"material_thickness": 0.75, "screw_length": 1.25},
+        {"material_thickness": 1.0, "screw_length": 1.5},
+        {"material_thickness": 1.5, "screw_length": 2.5}
+      ]
+    },
+    "nails": {
+      "brad_nails": {
+        "gauges": [18, 23],
+        "lengths": [0.625, 0.75, 1.0, 1.25, 1.5, 2.0]
+      },
+      "finish_nails": {
+        "gauges": [15, 16],
+        "lengths": [1.25, 1.5, 2.0, 2.5]
+      }
+    },
+    "dowels": {
+      "diameters": [0.25, 0.3125, 0.375, 0.5],
+      "standard_lengths": [1.5, 2.0, 3.0]
+    }
+  },
+  "hinges": {
+    "butt_hinge": {
+      "sizes": [
+        {"width": 1.5, "height": 1.5},
+        {"width": 2.0, "height": 2.0},
+        {"width": 2.5, "height": 2.5},
+        {"width": 3.0, "height": 3.0},
+        {"width": 3.5, "height": 3.5}
+      ],
+      "materials": ["brass", "nickel", "black"]
+    },
+    "european_hinge": {
+      "cup_diameter": 1.38,
+      "boring_depth": 0.5,
+      "overlay_options": ["full", "half", "inset"]
+    },
+    "piano_hinge": {
+      "widths": [1.0, 1.5, 2.0],
+      "sold_by": "linear_inch"
+    }
+  },
+  "drawer_slides": {
+    "side_mount": {
+      "lengths": [12, 14, 16, 18, 20, 22, 24],
+      "extension": ["three_quarter", "full", "over_travel"],
+      "weight_ratings_lb": [75, 100, 150]
+    },
+    "undermount": {
+      "lengths": [12, 15, 18, 21, 24],
+      "soft_close": true,
+      "weight_ratings_lb": [75, 100]
+    },
+    "center_mount": {
+      "lengths": [12, 14, 16, 18, 20, 22],
+      "weight_ratings_lb": [35]
+    }
+  },
+  "shelf_supports": {
+    "pin_diameter": 0.25,
+    "shelf_pin_spacing": 1.25,
+    "styles": ["spoon", "flat", "locking"]
+  },
+  "knobs_pulls": {
+    "standard_hole_spacing": [3.0, 3.75, 4.0, 5.0, 6.0, 6.5, 7.5, 8.0, 10.0, 12.0]
+  }
+}

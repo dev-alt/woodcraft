@@ -1,0 +1,25 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         WOODCRAFT APPLICATION STYLES
+         Legacy compatibility styles - primary styles are now in Controls.axaml
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Legacy accent class (for backwards compatibility) -->
+    <Style Selector="Button.accent">
+        <Setter Property="Background" Value="{DynamicResource AccentPrimaryBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryDarkBrush}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <Style Selector="Button.accent:pointerover">
+        <Setter Property="Background" Value="{DynamicResource AccentPrimaryHoverBrush}"/>
+    </Style>
+
+    <Style Selector="Button.accent:pressed">
+        <Setter Property="Background" Value="{DynamicResource AccentPrimaryPressedBrush}"/>
+    </Style>
+
+</Styles>

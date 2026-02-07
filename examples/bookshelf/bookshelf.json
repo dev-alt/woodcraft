@@ -1,0 +1,147 @@
+{
+  "name": "Simple Bookshelf",
+  "units": "inches",
+  "material": {
+    "species": "red_oak",
+    "thickness": 0.75,
+    "finish": "polyurethane"
+  },
+  "parts": [
+    {
+      "id": "left_side",
+      "type": "side",
+      "dimensions": {"length": 36, "width": 10, "thickness": 0.75},
+      "quantity": 1,
+      "grain_direction": "length",
+      "material": "red_oak",
+      "notes": "Left side panel"
+    },
+    {
+      "id": "right_side",
+      "type": "side",
+      "dimensions": {"length": 36, "width": 10, "thickness": 0.75},
+      "quantity": 1,
+      "grain_direction": "length",
+      "material": "red_oak",
+      "notes": "Right side panel"
+    },
+    {
+      "id": "top",
+      "type": "top",
+      "dimensions": {"length": 30, "width": 10, "thickness": 0.75},
+      "quantity": 1,
+      "grain_direction": "length",
+      "material": "red_oak",
+      "notes": "Top piece"
+    },
+    {
+      "id": "bottom",
+      "type": "bottom",
+      "dimensions": {"length": 28.5, "width": 9.25, "thickness": 0.75},
+      "quantity": 1,
+      "grain_direction": "length",
+      "material": "red_oak",
+      "notes": "Bottom piece - fits in dadoes"
+    },
+    {
+      "id": "shelf_1",
+      "type": "shelf",
+      "dimensions": {"length": 28.5, "width": 9.25, "thickness": 0.75},
+      "quantity": 1,
+      "grain_direction": "length",
+      "material": "red_oak",
+      "notes": "Middle shelf - fits in dadoes"
+    },
+    {
+      "id": "shelf_2",
+      "type": "shelf",
+      "dimensions": {"length": 28.5, "width": 9.25, "thickness": 0.75},
+      "quantity": 1,
+      "grain_direction": "length",
+      "material": "red_oak",
+      "notes": "Upper shelf - fits in dadoes"
+    },
+    {
+      "id": "back_panel",
+      "type": "back",
+      "dimensions": {"length": 34.5, "width": 28.5, "thickness": 0.25},
+      "quantity": 1,
+      "grain_direction": "none",
+      "material": "plywood",
+      "notes": "1/4\" plywood back - fits in rabbets"
+    }
+  ],
+  "joinery": [
+    {
+      "type": "dado",
+      "part_a": "left_side",
+      "part_b": "bottom",
+      "position_a": [0.75, 0, 0],
+      "parameters": {"width": 0.75, "depth": 0.375}
+    },
+    {
+      "type": "dado",
+      "part_a": "right_side",
+      "part_b": "bottom",
+      "position_a": [0.75, 0, 0],
+      "parameters": {"width": 0.75, "depth": 0.375}
+    },
+    {
+      "type": "dado",
+      "part_a": "left_side",
+      "part_b": "shelf_1",
+      "position_a": [12, 0, 0],
+      "parameters": {"width": 0.75, "depth": 0.375}
+    },
+    {
+      "type": "dado",
+      "part_a": "right_side",
+      "part_b": "shelf_1",
+      "position_a": [12, 0, 0],
+      "parameters": {"width": 0.75, "depth": 0.375}
+    },
+    {
+      "type": "dado",
+      "part_a": "left_side",
+      "part_b": "shelf_2",
+      "position_a": [24, 0, 0],
+      "parameters": {"width": 0.75, "depth": 0.375}
+    },
+    {
+      "type": "dado",
+      "part_a": "right_side",
+      "part_b": "shelf_2",
+      "position_a": [24, 0, 0],
+      "parameters": {"width": 0.75, "depth": 0.375}
+    },
+    {
+      "type": "rabbet",
+      "part_a": "left_side",
+      "part_b": "back_panel",
+      "parameters": {"width": 0.375, "depth": 0.25, "edge": "back"}
+    },
+    {
+      "type": "rabbet",
+      "part_a": "right_side",
+      "part_b": "back_panel",
+      "parameters": {"width": 0.375, "depth": 0.25, "edge": "back"}
+    }
+  ],
+  "hardware": [
+    {
+      "name": "#8 x 1-1/4\" Wood Screws",
+      "quantity": 16,
+      "cost": 0.15,
+      "description": "For reinforcing shelf joints",
+      "unit": "each"
+    },
+    {
+      "name": "3/4\" Brad Nails",
+      "quantity": 20,
+      "cost": 0.05,
+      "description": "For attaching back panel",
+      "unit": "each"
+    }
+  ],
+  "notes": "A simple three-shelf bookshelf using dado joints for strength. Overall dimensions: 30\" wide x 36\" tall x 10\" deep."
+}

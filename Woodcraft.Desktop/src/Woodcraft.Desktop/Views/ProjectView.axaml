@@ -1,0 +1,151 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Woodcraft.Desktop.ViewModels"
+             x:Class="Woodcraft.Desktop.Views.ProjectView"
+             x:DataType="vm:ProjectViewModel"
+             x:CompileBindings="True">
+
+    <Panel>
+        <!-- Welcome/Get Started Panel (shown when no project) -->
+        <Border IsVisible="{Binding Project, Converter={x:Static ObjectConverters.IsNull}}"
+                Margin="12">
+            <StackPanel Spacing="20" VerticalAlignment="Center">
+                <!-- Welcome Header -->
+                <StackPanel Spacing="8" HorizontalAlignment="Center">
+                    <PathIcon Data="{StaticResource IconWood}" Width="48" Height="48"
+                              Foreground="{DynamicResource AccentPrimaryBrush}"
+                              HorizontalAlignment="Center"/>
+                    <TextBlock Text="Welcome to Woodcraft"
+                               FontSize="16" FontWeight="SemiBold"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Get started with your woodworking project"
+                               Classes="muted" FontSize="11"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Quick Actions -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Quick Start" Classes="label" Margin="0,0,0,4"/>
+
+                    <Border Classes="card" Padding="10">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <PathIcon Data="{StaticResource IconNew}" Width="20" Height="20"
+                                      Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                            <StackPanel>
+                                <TextBlock Text="New Project" FontWeight="SemiBold" FontSize="12"/>
+                                <TextBlock Text="Ctrl+N" Classes="muted" FontSize="10"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="card" Padding="10">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <PathIcon Data="{StaticResource IconOpen}" Width="20" Height="20"
+                                      Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                            <StackPanel>
+                                <TextBlock Text="Open Project" FontWeight="SemiBold" FontSize="12"/>
+                                <TextBlock Text="Ctrl+O" Classes="muted" FontSize="10"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Templates hint -->
+                <Border Background="{DynamicResource BackgroundLightBrush}"
+                        CornerRadius="4" Padding="12,10">
+                    <StackPanel Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconPreset}" Width="14" Height="14"
+                                      Foreground="{DynamicResource InfoBrush}"/>
+                            <TextBlock Text="Tip" FontWeight="SemiBold" FontSize="11"/>
+                        </StackPanel>
+                        <TextBlock Text="Use templates to quickly create bookshelf, cabinet, or drawer projects!"
+                                   TextWrapping="Wrap" FontSize="11" Classes="muted"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Project View (shown when project is loaded) -->
+        <DockPanel IsVisible="{Binding Project, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <!-- Toolbar -->
+            <Border DockPanel.Dock="Top" Padding="8,6"
+                    BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                    BorderThickness="0,0,0,1">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <Button Classes="icon-btn" Command="{Binding AddPartCommand}" ToolTip.Tip="Add Part (Ctrl+P)">
+                        <PathIcon Data="{StaticResource IconAdd}" Width="14" Height="14"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding RemovePartCommand}" ToolTip.Tip="Remove Part (Del)">
+                        <PathIcon Data="{StaticResource IconDelete}" Width="14" Height="14"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding DuplicatePartCommand}" ToolTip.Tip="Duplicate Part">
+                        <PathIcon Data="{StaticResource IconDuplicate}" Width="14" Height="14"/>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- Project Info Card -->
+            <Border DockPanel.Dock="Top" Classes="card" Margin="8">
+                <StackPanel Spacing="6">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconWood}" Width="16" Height="16"
+                                  Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                        <TextBlock Text="{Binding Project.Name}" FontWeight="SemiBold" FontSize="13"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="2">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconMaterial}" Width="12" Height="12"
+                                      Foreground="{DynamicResource TextTertiaryBrush}"/>
+                            <TextBlock Text="{Binding Project.Material.Species, StringFormat='Material: {0}'}"
+                                       FontSize="11" Classes="muted"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconRuler}" Width="12" Height="12"
+                                      Foreground="{DynamicResource TextTertiaryBrush}"/>
+                            <TextBlock Text="{Binding Project.Units, StringFormat='Units: {0}'}"
+                                       FontSize="11" Classes="muted"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Separator DockPanel.Dock="Top" Margin="8,0"/>
+
+            <!-- Empty State when no parts -->
+            <Border IsVisible="{Binding !PartTree.Count}"
+                    Margin="12" VerticalAlignment="Top">
+                <StackPanel Spacing="12" HorizontalAlignment="Center">
+                    <PathIcon Data="{StaticResource IconPart}" Width="32" Height="32"
+                              Foreground="{DynamicResource TextTertiaryBrush}"
+                              HorizontalAlignment="Center"/>
+                    <TextBlock Text="No parts yet"
+                               HorizontalAlignment="Center"
+                               Classes="muted"/>
+                    <TextBlock Text="Click + to add your first part"
+                               FontSize="11"
+                               HorizontalAlignment="Center"
+                               Classes="muted"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Part Tree -->
+            <ScrollViewer IsVisible="{Binding PartTree.Count}">
+                <TreeView ItemsSource="{Binding PartTree}"
+                          SelectedItem="{Binding SelectedTreeItem, Mode=TwoWay}"
+                          Margin="4,4,4,8">
+                    <TreeView.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <PathIcon Data="{StaticResource IconPart}" Width="14" Height="14"
+                                          Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </TreeDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </ScrollViewer>
+        </DockPanel>
+    </Panel>
+</UserControl>

@@ -1,0 +1,188 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Woodcraft.Desktop.ViewModels"
+        x:Class="Woodcraft.Desktop.Views.NewPartDialog"
+        x:DataType="vm:NewPartDialogViewModel"
+        x:CompileBindings="True"
+        Title="New Part"
+        Width="520" Height="640"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="{DynamicResource BackgroundDarkBrush}">
+
+    <Window.Styles>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+        <Style Selector="ListBoxItem:pointerover">
+            <Setter Property="Background" Value="{DynamicResource BackgroundLighterBrush}"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected">
+            <Setter Property="Background" Value="{DynamicResource AccentPrimaryBrush}"/>
+        </Style>
+    </Window.Styles>
+
+    <DockPanel Margin="20">
+        <!-- Header -->
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <PathIcon Data="{StaticResource IconAdd}" Width="24" Height="24"
+                          Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                <TextBlock Text="Create New Part" FontSize="20" FontWeight="SemiBold"/>
+            </StackPanel>
+            <TextBlock Text="Add a new part to your project" Classes="muted" Margin="36,4,0,0"/>
+        </StackPanel>
+
+        <!-- Validation Error -->
+        <Border DockPanel.Dock="Top"
+                IsVisible="{Binding ValidationError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                Background="{DynamicResource ErrorBrush}"
+                CornerRadius="4"
+                Padding="12,8"
+                Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Data="{StaticResource IconError}" Width="16" Height="16" Foreground="White"/>
+                <TextBlock Text="{Binding ValidationError}" Foreground="White"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Footer Buttons -->
+        <Border DockPanel.Dock="Bottom"
+                BorderBrush="{DynamicResource SurfaceStrokeBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="0,16,0,0"
+                Margin="0,16,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+                <Button Content="Cancel" Command="{Binding CancelCommand}" Padding="20,10"/>
+                <Button Content="Create Part" Command="{Binding CreateCommand}" Classes="primary" Padding="20,10">
+                    <Button.ContentTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <PathIcon Data="{StaticResource IconAdd}" Width="14" Height="14"/>
+                                <TextBlock Text="Create Part"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </Button.ContentTemplate>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- Content -->
+        <ScrollViewer>
+            <StackPanel Spacing="16">
+                <!-- Part Name -->
+                <Border Classes="card">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <PathIcon Data="{StaticResource IconEdit}" Width="14" Height="14"
+                                      Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                            <TextBlock Text="Part Name" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <TextBox Text="{Binding PartName}" Watermark="Enter part name..."/>
+                        <TextBlock Text="Use lowercase with underscores (e.g., top_shelf, left_side)"
+                                   Classes="label" FontSize="10"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Quick Start Presets -->
+                <Border Classes="card">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <PathIcon Data="{StaticResource IconPreset}" Width="14" Height="14"
+                                      Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                            <TextBlock Text="Quick Start" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <TextBlock Text="Select a preset to auto-fill dimensions" Classes="label"/>
+
+                        <ListBox ItemsSource="{Binding Presets}"
+                                 SelectedItem="{Binding SelectedPreset}"
+                                 MaxHeight="150">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                        <TextBlock FontSize="10" Classes="muted">
+                                            <Run Text="{Binding Length}"/>
+                                            <Run Text="×"/>
+                                            <Run Text="{Binding Width}"/>
+                                            <Run Text="×"/>
+                                            <Run Text="{Binding Thickness}"/>
+                                            <Run Text="&quot; -"/>
+                                            <Run Text="{Binding Description}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+
+                <!-- Dimensions -->
+                <Border Classes="card">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <PathIcon Data="{StaticResource IconDimension}" Width="14" Height="14"
+                                      Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                            <TextBlock Text="Dimensions" FontWeight="SemiBold"/>
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*,8,*,8,*" RowDefinitions="Auto,Auto,12,Auto">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Length" Classes="label"/>
+                            <TextBlock Grid.Row="0" Grid.Column="2" Text="Width" Classes="label"/>
+                            <TextBlock Grid.Row="0" Grid.Column="4" Text="Thickness" Classes="label"/>
+
+                            <NumericUpDown Grid.Row="1" Grid.Column="0" Value="{Binding Length}"
+                                           Minimum="0.1" Increment="1" FormatString="F3"/>
+                            <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding Width}"
+                                           Minimum="0.1" Increment="1" FormatString="F3"/>
+                            <NumericUpDown Grid.Row="1" Grid.Column="4" Value="{Binding Thickness}"
+                                           Minimum="0.1" Increment="0.125" FormatString="F3"/>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="5"
+                                       Text="Common Thicknesses" Classes="label"/>
+                        </Grid>
+
+                        <WrapPanel Orientation="Horizontal">
+                            <Button Content="1/4&quot;" Classes="chip" Command="{Binding SetThicknessCommand}" CommandParameter="1/4" Margin="2"/>
+                            <Button Content="3/8&quot;" Classes="chip" Command="{Binding SetThicknessCommand}" CommandParameter="3/8" Margin="2"/>
+                            <Button Content="1/2&quot;" Classes="chip" Command="{Binding SetThicknessCommand}" CommandParameter="1/2" Margin="2"/>
+                            <Button Content="5/8&quot;" Classes="chip" Command="{Binding SetThicknessCommand}" CommandParameter="5/8" Margin="2"/>
+                            <Button Content="3/4&quot;" Classes="chip" Command="{Binding SetThicknessCommand}" CommandParameter="3/4" Margin="2"/>
+                            <Button Content="1&quot;" Classes="chip" Command="{Binding SetThicknessCommand}" CommandParameter="1" Margin="2"/>
+                            <Button Content="1-1/4&quot;" Classes="chip" Command="{Binding SetThicknessCommand}" CommandParameter="1-1/4" Margin="2"/>
+                            <Button Content="1-1/2&quot;" Classes="chip" Command="{Binding SetThicknessCommand}" CommandParameter="1-1/2" Margin="2"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Material & Options -->
+                <Border Classes="card">
+                    <Grid ColumnDefinitions="*,16,*" RowDefinitions="Auto,Auto,16,Auto,Auto,16,Auto,Auto">
+                        <!-- Quantity -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Quantity" Classes="label"/>
+                        <NumericUpDown Grid.Row="1" Grid.Column="0" Value="{Binding Quantity}"
+                                       Minimum="1" Maximum="100" Increment="1"/>
+
+                        <!-- Part Type -->
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Part Type" Classes="label"/>
+                        <ComboBox Grid.Row="1" Grid.Column="2" ItemsSource="{Binding PartTypes}"
+                                  SelectedItem="{Binding PartType}"/>
+
+                        <!-- Material -->
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Material" Classes="label"/>
+                        <ComboBox Grid.Row="4" Grid.Column="0" ItemsSource="{Binding Materials}"
+                                  SelectedItem="{Binding Material}"/>
+
+                        <!-- Grain Direction -->
+                        <TextBlock Grid.Row="3" Grid.Column="2" Text="Grain Direction" Classes="label"/>
+                        <ComboBox Grid.Row="4" Grid.Column="2" ItemsSource="{Binding GrainDirections}"
+                                  SelectedItem="{Binding GrainDirection}"/>
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

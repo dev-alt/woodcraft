@@ -1,0 +1,34 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Woodcraft.Desktop"
+             x:Class="Woodcraft.Desktop.App"
+             x:DataType="local:App"
+             RequestedThemeVariant="Dark">
+
+    <Application.DataTemplates>
+        <local:ViewLocator/>
+    </Application.DataTemplates>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Color Palette -->
+                <ResourceInclude Source="avares://Woodcraft.Desktop/Assets/Styles/Colors.axaml"/>
+                <!-- Icon Library -->
+                <ResourceInclude Source="avares://Woodcraft.Desktop/Assets/Icons/Icons.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <!-- Base Fluent Theme (Dark) -->
+        <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+
+        <!-- Custom Woodcraft Styles -->
+        <StyleInclude Source="avares://Woodcraft.Desktop/Assets/Styles/Controls.axaml"/>
+        <StyleInclude Source="avares://Woodcraft.Desktop/Assets/Styles/Animations.axaml"/>
+        <StyleInclude Source="avares://Woodcraft.Desktop/Assets/Styles/App.axaml"/>
+    </Application.Styles>
+
+</Application>

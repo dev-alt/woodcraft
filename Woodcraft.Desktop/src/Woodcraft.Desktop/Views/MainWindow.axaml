@@ -1,0 +1,280 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Woodcraft.Desktop.ViewModels"
+        xmlns:views="using:Woodcraft.Desktop.Views"
+        xmlns:conv="using:Woodcraft.Desktop.Converters"
+        x:Class="Woodcraft.Desktop.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        x:CompileBindings="True"
+        Title="{Binding Title}"
+        Width="1400" Height="900"
+        MinWidth="1000" MinHeight="700"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BackgroundDarkBrush}">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <!-- Keyboard Shortcuts -->
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+N" Command="{Binding NewProjectCommand}"/>
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding OpenProjectCommand}"/>
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveProjectCommand}"/>
+        <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveProjectAsCommand}"/>
+        <KeyBinding Gesture="Ctrl+P" Command="{Binding AddPartCommand}"/>
+        <KeyBinding Gesture="Delete" Command="{Binding RemovePartCommand}"/>
+    </Window.KeyBindings>
+
+    <DockPanel>
+        <!-- Menu Bar -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New Project" Command="{Binding NewProjectCommand}" InputGesture="Ctrl+N">
+                    <MenuItem.Icon>
+                        <PathIcon Data="{StaticResource IconNew}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Open..." Command="{Binding OpenProjectCommand}" InputGesture="Ctrl+O">
+                    <MenuItem.Icon>
+                        <PathIcon Data="{StaticResource IconOpen}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="_Save" Command="{Binding SaveProjectCommand}" InputGesture="Ctrl+S">
+                    <MenuItem.Icon>
+                        <PathIcon Data="{StaticResource IconSave}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Save _As..." Command="{Binding SaveProjectAsCommand}" InputGesture="Ctrl+Shift+S">
+                    <MenuItem.Icon>
+                        <PathIcon Data="{StaticResource IconSaveAs}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="_Close Project" Command="{Binding CloseProjectCommand}">
+                    <MenuItem.Icon>
+                        <PathIcon Data="{StaticResource IconClose}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="E_xit" Click="OnExit"/>
+            </MenuItem>
+            <MenuItem Header="_Project">
+                <MenuItem Header="_Add Part" Command="{Binding AddPartCommand}" InputGesture="Ctrl+P">
+                    <MenuItem.Icon>
+                        <PathIcon Data="{StaticResource IconAdd}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Remove Part" Command="{Binding RemovePartCommand}" InputGesture="Delete">
+                    <MenuItem.Icon>
+                        <PathIcon Data="{StaticResource IconDelete}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="_Validate Design" Command="{Binding ValidateDesignCommand}">
+                    <MenuItem.Icon>
+                        <PathIcon Data="{StaticResource IconCheck}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="_Generate">
+                <MenuItem Header="_Cut List" Command="{Binding GenerateCutListCommand}">
+                    <MenuItem.Icon>
+                        <PathIcon Data="{StaticResource IconCutList}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Bill of Materials" Command="{Binding GenerateBOMCommand}">
+                    <MenuItem.Icon>
+                        <PathIcon Data="{StaticResource IconBOM}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="E_xport">
+                <MenuItem Header="Export _STEP..." Command="{Binding ExportStepCommand}">
+                    <MenuItem.Icon>
+                        <PathIcon Data="{StaticResource IconExport}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About Woodcraft" Click="OnAbout">
+                    <MenuItem.Icon>
+                        <PathIcon Data="{StaticResource IconAbout}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+        </Menu>
+
+        <!-- Toolbar -->
+        <Border DockPanel.Dock="Top" Classes="toolbar">
+            <Grid ColumnDefinitions="*,Auto">
+                <!-- Left: Action Buttons -->
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                    <!-- File Operations -->
+                    <Button Classes="icon-btn" Command="{Binding NewProjectCommand}" ToolTip.Tip="New Project (Ctrl+N)">
+                        <PathIcon Data="{StaticResource IconNew}" Width="16" Height="16"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding OpenProjectCommand}" ToolTip.Tip="Open Project (Ctrl+O)">
+                        <PathIcon Data="{StaticResource IconOpen}" Width="16" Height="16"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding SaveProjectCommand}" ToolTip.Tip="Save Project (Ctrl+S)">
+                        <PathIcon Data="{StaticResource IconSave}" Width="16" Height="16"/>
+                    </Button>
+
+                    <Separator Classes="vertical"/>
+
+                    <!-- Part Operations -->
+                    <Button Classes="icon-btn" Command="{Binding AddPartCommand}" ToolTip.Tip="Add Part (Ctrl+P)">
+                        <PathIcon Data="{StaticResource IconAdd}" Width="16" Height="16"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding RemovePartCommand}" ToolTip.Tip="Remove Selected Part">
+                        <PathIcon Data="{StaticResource IconDelete}" Width="16" Height="16"/>
+                    </Button>
+
+                    <Separator Classes="vertical"/>
+
+                    <!-- Generation -->
+                    <Button Classes="icon-btn" Command="{Binding GenerateCutListCommand}" ToolTip.Tip="Generate Cut List">
+                        <PathIcon Data="{StaticResource IconCutList}" Width="16" Height="16"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding GenerateBOMCommand}" ToolTip.Tip="Generate Bill of Materials">
+                        <PathIcon Data="{StaticResource IconBOM}" Width="16" Height="16"/>
+                    </Button>
+                </StackPanel>
+
+                <!-- Right: Connection Status -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                    <Button Classes="icon-btn" Command="{Binding ConnectCommand}" ToolTip.Tip="Connect to CAD Engine">
+                        <PathIcon Data="{StaticResource IconConnect}" Width="16" Height="16"/>
+                    </Button>
+
+                    <Border Background="{DynamicResource BackgroundLightBrush}"
+                            CornerRadius="12" Padding="8,4" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Ellipse Width="8" Height="8"
+                                     Classes="status-dot"
+                                     Classes.connected="{Binding IsConnected}"
+                                     Classes.disconnected="{Binding !IsConnected}"/>
+                            <TextBlock Text="CAD Engine" FontSize="11"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Status Bar -->
+        <Border DockPanel.Dock="Bottom" Classes="status-bar">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+                <TextBlock Text="{Binding StatusMessage}"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" Margin="16,0">
+                    <PathIcon Data="{StaticResource IconPart}" Width="12" Height="12"
+                              Foreground="{DynamicResource TextTertiaryBrush}"/>
+                    <TextBlock Text="{Binding CurrentProject.Parts.Count, StringFormat='Parts: {0}', FallbackValue='Parts: 0'}"
+                               VerticalAlignment="Center"
+                               FontSize="11"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" Margin="0,0,16,0">
+                    <PathIcon Data="{StaticResource IconWood}" Width="12" Height="12"
+                              Foreground="{DynamicResource TextTertiaryBrush}"/>
+                    <TextBlock Text="{Binding CurrentProject.TotalBoardFeet, StringFormat='Board Feet: {0:F2}', FallbackValue='Board Feet: 0'}"
+                               VerticalAlignment="Center"
+                               FontSize="11"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                </StackPanel>
+
+                <TextBlock Grid.Column="3"
+                           Text="Woodcraft v1.0"
+                           FontSize="10"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid ColumnDefinitions="280,Auto,*,Auto,300">
+            <!-- Left Panel: Project Tree -->
+            <Border Grid.Column="0" Classes="panel">
+                <DockPanel>
+                    <Border DockPanel.Dock="Top" Classes="panel-header">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <PathIcon Data="{StaticResource IconLayers}" Width="14" Height="14"
+                                          Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                                <TextBlock Text="Project" Classes="panel-title"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <views:ProjectView DataContext="{Binding ProjectViewModel}"/>
+                </DockPanel>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Width="4" ResizeDirection="Columns"/>
+
+            <!-- Center: Tabbed Views -->
+            <TabControl Grid.Column="2" SelectedIndex="{Binding SelectedTabIndex}">
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconCube}" Width="14" Height="14"/>
+                            <TextBlock Text="3D View"/>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <views:Viewer3DView DataContext="{Binding Viewer3DViewModel}"/>
+                </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconDrawing}" Width="14" Height="14"/>
+                            <TextBlock Text="Drawing"/>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <views:DrawingView DataContext="{Binding DrawingViewModel}"/>
+                </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconCutList}" Width="14" Height="14"/>
+                            <TextBlock Text="Cut List"/>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <views:CutListView DataContext="{Binding CutListViewModel}"/>
+                </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconBOM}" Width="14" Height="14"/>
+                            <TextBlock Text="BOM"/>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <views:BOMView DataContext="{Binding BOMViewModel}"/>
+                </TabItem>
+            </TabControl>
+
+            <GridSplitter Grid.Column="3" Width="4" ResizeDirection="Columns"/>
+
+            <!-- Right Panel: Part Editor -->
+            <Border Grid.Column="4" Classes="panel">
+                <DockPanel>
+                    <Border DockPanel.Dock="Top" Classes="panel-header">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <PathIcon Data="{StaticResource IconEdit}" Width="14" Height="14"
+                                      Foreground="{DynamicResource AccentPrimaryBrush}"/>
+                            <TextBlock Text="Properties" Classes="panel-title"/>
+                        </StackPanel>
+                    </Border>
+
+                    <views:PartEditorView DataContext="{Binding PartEditorViewModel}"/>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+</Window>
