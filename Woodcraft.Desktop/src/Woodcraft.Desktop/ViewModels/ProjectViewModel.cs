@@ -129,7 +129,7 @@ public partial class ProjectViewModel : ViewModelBase
         }
     }
 
-    private void SelectPartById(string partId)
+    public void SelectPartById(string partId)
     {
         foreach (var category in PartTree)
         {

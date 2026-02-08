@@ -51,13 +51,37 @@ public partial class DrawingViewModel : ViewModelBase
 
     public ObservableCollection<double> Scales { get; } = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0];
 
+    // Display scale: pixels per inch for the XAML view
+    private const double DisplayPpi = 4.0;
+
+    // Computed view dimensions (scaled for display)
+    public double TopViewWidth => (SelectedPart?.Dimensions.Length ?? 100) * DisplayPpi * Scale;
+    public double TopViewHeight => (SelectedPart?.Dimensions.Width ?? 50) * DisplayPpi * Scale;
+    public double FrontViewWidth => (SelectedPart?.Dimensions.Length ?? 100) * DisplayPpi * Scale;
+    public double FrontViewHeight => (SelectedPart?.Dimensions.Thickness ?? 20) * DisplayPpi * Scale;
+    public double SideViewWidth => (SelectedPart?.Dimensions.Width ?? 50) * DisplayPpi * Scale;
+    public double SideViewHeight => (SelectedPart?.Dimensions.Thickness ?? 20) * DisplayPpi * Scale;
+
     public DrawingViewModel(ICadService cadService)
     {
         _cadService = cadService;
     }
 
+    private void NotifyViewSizes()
+    {
+        OnPropertyChanged(nameof(TopViewWidth));
+        OnPropertyChanged(nameof(TopViewHeight));
+        OnPropertyChanged(nameof(FrontViewWidth));
+        OnPropertyChanged(nameof(FrontViewHeight));
+        OnPropertyChanged(nameof(SideViewWidth));
+        OnPropertyChanged(nameof(SideViewHeight));
+    }
+
+    partial void OnScaleChanged(double value) => NotifyViewSizes();
+
     partial void OnSelectedPartChanged(Part? value)
     {
+        NotifyViewSizes();
         if (value != null)
         {
             _ = GenerateAsync().ContinueWith(t =>

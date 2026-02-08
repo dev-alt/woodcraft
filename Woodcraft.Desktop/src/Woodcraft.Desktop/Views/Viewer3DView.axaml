@@ -168,7 +168,7 @@
                                     Canvas.Top="{Binding PositionY}"
                                     CornerRadius="2"
                                     BoxShadow="2 2 8 0 #40000000"
-                                    Background="{Binding WoodBrush}"
+                                    Background="{Binding DisplayBrush}"
                                     Cursor="Hand"
                                     PointerPressed="OnPartPointerPressed"
                                     PointerMoved="OnPartPointerMoved"
@@ -200,7 +200,8 @@
                                             </TextBlock>
                                             <TextBlock HorizontalAlignment="Center"
                                                        Foreground="#CCFFFFFF"
-                                                       FontSize="8">
+                                                       FontSize="8"
+                                                       IsVisible="{Binding ShowDimensionText}">
                                                 <Run Text="{Binding SizeX, StringFormat={}{0:F1}}"/>
                                                 <Run Text="x"/>
                                                 <Run Text="{Binding SizeY, StringFormat={}{0:F1}}"/>

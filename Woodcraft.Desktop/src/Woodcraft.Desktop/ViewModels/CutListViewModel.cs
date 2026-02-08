@@ -64,6 +64,18 @@ public partial class CutListViewModel : ViewModelBase
         _cadService = cadService;
     }
 
+    partial void OnProjectChanged(Project? value)
+    {
+        if (value != null && value.Parts.Count > 0)
+        {
+            _ = GenerateAsync().ContinueWith(t => { _ = t.Exception; }, TaskContinuationOptions.OnlyOnFaulted);
+        }
+        else
+        {
+            Result = null;
+        }
+    }
+
     [RelayCommand]
     private async Task GenerateAsync()
     {
@@ -230,10 +242,11 @@ public partial class CutListViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void ApplyPreset(StockPreset preset)
+    private async Task ApplyPresetAsync(StockPreset preset)
     {
         StockLength = preset.Length;
         StockWidth = preset.Width;
+        await GenerateAsync();
     }
 
     [RelayCommand]

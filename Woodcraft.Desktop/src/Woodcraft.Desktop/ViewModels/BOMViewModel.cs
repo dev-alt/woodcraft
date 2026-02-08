@@ -39,6 +39,20 @@ public partial class BOMViewModel : ViewModelBase
         _cadService = cadService;
     }
 
+    partial void OnProjectChanged(Project? value)
+    {
+        if (value != null && value.Parts.Count > 0)
+        {
+            _ = GenerateAsync().ContinueWith(t => { _ = t.Exception; }, TaskContinuationOptions.OnlyOnFaulted);
+        }
+        else
+        {
+            LineItems.Clear();
+            Bom = null;
+            TotalCost = 0;
+        }
+    }
+
     [RelayCommand]
     public async Task GenerateAsync()
     {

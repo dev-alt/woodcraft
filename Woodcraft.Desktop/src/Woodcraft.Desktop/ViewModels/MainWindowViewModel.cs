@@ -199,6 +199,13 @@ public partial class MainWindowViewModel : ViewModelBase
                 ProjectViewModel.Project = project; // Refresh
             }
 
+            // Auto-select first part so all views populate immediately
+            if (project.Parts.Count > 0)
+            {
+                SelectedPart = project.Parts[0];
+                ProjectViewModel.SelectPartById(project.Parts[0].Id);
+            }
+
             StatusMessage = $"Created project: {project.Name} with {project.Parts.Count} parts";
         }
     }

@@ -289,25 +289,40 @@ public partial class Viewer3DViewModel : ViewModelBase
 
     partial void OnShowExplodedChanged(bool value)
     {
-        // Recalculate positions for exploded view
         if (Project == null) return;
 
         foreach (var model in Models)
         {
             if (value)
             {
-                // Move parts apart
-                model.ExplodedPositionX = model.PositionX * ExplosionFactor;
-                model.ExplodedPositionY = model.PositionY * ExplosionFactor;
-                model.ExplodedPositionZ = model.PositionZ * ExplosionFactor;
+                // Store original positions and spread parts apart
+                model.OriginalPositionX ??= model.PositionX;
+                model.OriginalPositionY ??= model.PositionY;
+                model.PositionX = model.OriginalPositionX.Value * ExplosionFactor;
+                model.PositionY = model.OriginalPositionY.Value * ExplosionFactor;
             }
-            else
+            else if (model.OriginalPositionX.HasValue)
             {
-                model.ExplodedPositionX = model.PositionX;
-                model.ExplodedPositionY = model.PositionY;
-                model.ExplodedPositionZ = model.PositionZ;
+                model.PositionX = model.OriginalPositionX.Value;
+                model.PositionY = model.OriginalPositionY!.Value;
+                model.OriginalPositionX = null;
+                model.OriginalPositionY = null;
             }
         }
+
+        RebuildJointLines();
+    }
+
+    partial void OnShowWireframeChanged(bool value)
+    {
+        foreach (var model in Models)
+            model.IsWireframe = value;
+    }
+
+    partial void OnShowDimensionsChanged(bool value)
+    {
+        foreach (var model in Models)
+            model.ShowDimensionText = value;
     }
 }
 
@@ -325,15 +340,9 @@ public partial class Part3DModel : ObservableObject
     [ObservableProperty]
     private double _positionZ;
 
-    // Exploded position
-    [ObservableProperty]
-    private double _explodedPositionX;
-
-    [ObservableProperty]
-    private double _explodedPositionY;
-
-    [ObservableProperty]
-    private double _explodedPositionZ;
+    // Original positions (stored when exploded)
+    public double? OriginalPositionX { get; set; }
+    public double? OriginalPositionY { get; set; }
 
     // Size
     [ObservableProperty]
@@ -351,9 +360,28 @@ public partial class Part3DModel : ObservableObject
     [ObservableProperty]
     private bool _isSecondarySelected;
 
+    [ObservableProperty]
+    private bool _isWireframe;
+
+    [ObservableProperty]
+    private bool _showDimensionText = true;
+
     // Material-specific wood appearance
-    public IBrush WoodBrush { get; set; } = new SolidColorBrush(Color.Parse("#CD853F"));
-    public IBrush WoodBorderBrush { get; set; } = new SolidColorBrush(Color.Parse("#8B4513"));
+    [ObservableProperty]
+    private IBrush _woodBrush = new SolidColorBrush(Color.Parse("#CD853F"));
+
+    [ObservableProperty]
+    private IBrush _woodBorderBrush = new SolidColorBrush(Color.Parse("#8B4513"));
+
+    private static readonly IBrush TransparentBrush = new SolidColorBrush(Colors.Transparent);
+
+    /// <summary>
+    /// Returns transparent when wireframe mode is active, otherwise the wood brush.
+    /// </summary>
+    public IBrush DisplayBrush => IsWireframe ? TransparentBrush : WoodBrush;
+
+    partial void OnIsWireframeChanged(bool value) => OnPropertyChanged(nameof(DisplayBrush));
+    partial void OnWoodBrushChanged(IBrush value) => OnPropertyChanged(nameof(DisplayBrush));
 }
 
 public partial class JointLineModel : ObservableObject
