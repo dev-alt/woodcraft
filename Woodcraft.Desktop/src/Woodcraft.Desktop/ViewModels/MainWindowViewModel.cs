@@ -339,6 +339,8 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task CloseProjectAsync()
     {
+        if (!await ConfirmDiscardChangesAsync()) return;
+
         await _projectService.CloseProjectAsync();
         SelectedPart = null;
         StatusMessage = "Project closed";
@@ -475,10 +477,20 @@ public partial class MainWindowViewModel : ViewModelBase
 
         if (file != null)
         {
+            if (!_cadService.IsConnected)
+            {
+                StatusMessage = "STEP export requires the CAD engine. Click 'Connect' in the toolbar.";
+                return;
+            }
+
             try
             {
                 StatusMessage = "Exporting STEP...";
-                await _cadService.ExportStepAsync();
+                var tempPath = await _cadService.ExportStepAsync();
+                if (!string.IsNullOrEmpty(tempPath) && File.Exists(tempPath))
+                {
+                    File.Copy(tempPath, file.Path.LocalPath, overwrite: true);
+                }
                 StatusMessage = $"Exported: {file.Path.LocalPath}";
             }
             catch (Exception ex)
@@ -515,6 +527,82 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             StatusMessage = $"Validation failed: {ex.Message}";
         }
+    }
+
+    public bool HasUnsavedChanges => CurrentProject?.IsDirty == true;
+
+    /// <summary>
+    /// Checks for unsaved changes and prompts the user. Returns true if it's safe to close.
+    /// </summary>
+    public async Task<bool> ConfirmDiscardChangesAsync()
+    {
+        if (!HasUnsavedChanges) return true;
+
+        var mainWindow = GetMainWindow();
+        if (mainWindow == null) return true;
+
+        var dialog = new Window
+        {
+            Title = "Unsaved Changes",
+            Width = 400,
+            Height = 200,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false,
+            ShowInTaskbar = false,
+        };
+
+        var result = false;
+
+        var panel = new StackPanel
+        {
+            Margin = new Thickness(24),
+            Spacing = 16,
+        };
+
+        panel.Children.Add(new TextBlock
+        {
+            Text = $"Save changes to \"{CurrentProject?.Name}\"?",
+            FontSize = 16,
+            FontWeight = Avalonia.Media.FontWeight.SemiBold,
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+        });
+
+        panel.Children.Add(new TextBlock
+        {
+            Text = "Your changes will be lost if you don't save them.",
+            Opacity = 0.7,
+        });
+
+        var buttons = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Spacing = 8,
+        };
+
+        var discardBtn = new Button { Content = "Don't Save", Padding = new Thickness(16, 8) };
+        discardBtn.Click += (_, _) => { result = true; dialog.Close(); };
+
+        var cancelBtn = new Button { Content = "Cancel", Padding = new Thickness(16, 8) };
+        cancelBtn.Click += (_, _) => { result = false; dialog.Close(); };
+
+        var saveBtn = new Button { Content = "Save", Padding = new Thickness(16, 8), Classes = { "primary" } };
+        saveBtn.Click += async (_, _) =>
+        {
+            await SaveProjectAsync();
+            result = true;
+            dialog.Close();
+        };
+
+        buttons.Children.Add(discardBtn);
+        buttons.Children.Add(cancelBtn);
+        buttons.Children.Add(saveBtn);
+        panel.Children.Add(buttons);
+
+        dialog.Content = panel;
+        await dialog.ShowDialog(mainWindow);
+
+        return result;
     }
 
     public async Task CleanupAsync()

@@ -64,8 +64,8 @@
         </Border>
 
         <!-- 3D Viewport -->
-        <Border Classes="viewport">
-            <Grid>
+        <Border Classes="viewport" ClipToBounds="True">
+            <Grid x:Name="ViewportGrid">
                 <!-- Grid Background Pattern -->
                 <Canvas ClipToBounds="True">
                     <Canvas.Background>

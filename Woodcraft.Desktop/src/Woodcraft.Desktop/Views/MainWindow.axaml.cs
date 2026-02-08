@@ -1,5 +1,7 @@
+using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Woodcraft.Desktop.ViewModels;
 
 namespace Woodcraft.Desktop.Views;
 
@@ -8,6 +10,24 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+    }
+
+    protected override async void OnClosing(WindowClosingEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm && vm.HasUnsavedChanges)
+        {
+            e.Cancel = true;
+            var canClose = await vm.ConfirmDiscardChangesAsync();
+            if (canClose)
+            {
+                await vm.CleanupAsync();
+                // Re-close without prompting again
+                e.Cancel = false;
+                Close();
+            }
+        }
+
+        base.OnClosing(e);
     }
 
     private void OnExit(object? sender, RoutedEventArgs e)

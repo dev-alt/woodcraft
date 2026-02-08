@@ -154,6 +154,104 @@ public partial class ProjectViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task RenamePartAsync()
+    {
+        var part = SelectedPart;
+        if (part == null || Project == null) return;
+
+        var mainWindow = GetMainWindow();
+        if (mainWindow == null) return;
+
+        var dialog = new Window
+        {
+            Title = "Rename Part",
+            Width = 360,
+            Height = 180,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false,
+            ShowInTaskbar = false,
+        };
+
+        var textBox = new Avalonia.Controls.TextBox { Text = part.Id, Margin = new Avalonia.Thickness(0, 8, 0, 16) };
+        var panel = new StackPanel { Margin = new Avalonia.Thickness(20) };
+        panel.Children.Add(new Avalonia.Controls.TextBlock
+        {
+            Text = "New Name:",
+            FontWeight = Avalonia.Media.FontWeight.SemiBold,
+        });
+        panel.Children.Add(textBox);
+
+        var buttons = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Spacing = 8,
+        };
+        var cancelBtn = new Avalonia.Controls.Button { Content = "Cancel", Padding = new Avalonia.Thickness(16, 8) };
+        cancelBtn.Click += (_, _) => dialog.Close();
+
+        var okBtn = new Avalonia.Controls.Button { Content = "Rename", Padding = new Avalonia.Thickness(16, 8), Classes = { "primary" } };
+        okBtn.Click += (_, _) =>
+        {
+            var newName = textBox.Text?.Trim();
+            if (string.IsNullOrEmpty(newName) || newName == part.Id) { dialog.Close(); return; }
+            if (Project.GetPart(newName) != null) { dialog.Close(); return; }
+
+            var oldId = part.Id;
+            part.Id = newName;
+
+            // Update joint references
+            foreach (var j in Project.Joinery)
+            {
+                if (j.PartAId == oldId) j.PartAId = newName;
+                if (j.PartBId == oldId) j.PartBId = newName;
+            }
+
+            Project.IsDirty = true;
+            RefreshTree();
+            SelectPartById(newName);
+            dialog.Close();
+        };
+
+        buttons.Children.Add(cancelBtn);
+        buttons.Children.Add(okBtn);
+        panel.Children.Add(buttons);
+        dialog.Content = panel;
+
+        await dialog.ShowDialog(mainWindow);
+    }
+
+    [RelayCommand]
+    private void MovePartUp()
+    {
+        var part = SelectedPart;
+        if (part == null || Project == null) return;
+
+        var idx = Project.Parts.IndexOf(part);
+        if (idx <= 0) return;
+
+        Project.Parts.Move(idx, idx - 1);
+        Project.IsDirty = true;
+        RefreshTree();
+        SelectPartById(part.Id);
+    }
+
+    [RelayCommand]
+    private void MovePartDown()
+    {
+        var part = SelectedPart;
+        if (part == null || Project == null) return;
+
+        var idx = Project.Parts.IndexOf(part);
+        if (idx < 0 || idx >= Project.Parts.Count - 1) return;
+
+        Project.Parts.Move(idx, idx + 1);
+        Project.IsDirty = true;
+        RefreshTree();
+        SelectPartById(part.Id);
+    }
+
+    [RelayCommand]
     private async Task RemovePartAsync()
     {
         var part = SelectedPart;

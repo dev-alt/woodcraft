@@ -60,7 +60,11 @@ public partial class DrawingViewModel : ViewModelBase
     {
         if (value != null)
         {
-            _ = GenerateAsync();
+            _ = GenerateAsync().ContinueWith(t =>
+            {
+                // Observe the exception to prevent UnobservedTaskException
+                _ = t.Exception;
+            }, TaskContinuationOptions.OnlyOnFaulted);
         }
         else
         {

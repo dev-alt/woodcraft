@@ -20,10 +20,23 @@ public partial class Viewer3DView : UserControl
     private const double DragThreshold = 4;
     private const double SnapDistance = 8;
 
+    // Pan state
+    private bool _isPanning;
+    private Point _panStart;
+    private double _panStartOffsetX;
+    private double _panStartOffsetY;
+    private double _panOffsetX;
+    private double _panOffsetY;
+    private double _zoomScale = 1.0;
+
     public Viewer3DView()
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
+        PointerWheelChanged += OnPointerWheelChanged;
+        PointerPressed += OnViewportPointerPressed;
+        PointerMoved += OnViewportPointerMoved;
+        PointerReleased += OnViewportPointerReleased;
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
@@ -127,6 +140,12 @@ public partial class Viewer3DView : UserControl
         _dragTarget.PositionX = newX;
         _dragTarget.PositionY = newY;
 
+        // Update joint lines in real-time while dragging
+        if (vm != null)
+        {
+            UpdateJointLinesForModel(vm, _dragTarget);
+        }
+
         e.Handled = true;
     }
 
@@ -158,11 +177,10 @@ public partial class Viewer3DView : UserControl
             PartBName = vm.SecondarySelectedPart.Id,
         };
 
-        var dialog = BuildAddJointDialog(dialogVm);
-
         var mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
         if (mainWindow == null) return;
 
+        var dialog = new AddJointDialog(dialogVm);
         await dialog.ShowDialog(mainWindow);
 
         if (dialogVm.DialogResult)
@@ -171,103 +189,97 @@ public partial class Viewer3DView : UserControl
         }
     }
 
-    private static Window BuildAddJointDialog(AddJointDialogViewModel vm)
+    private void UpdateJointLinesForModel(Viewer3DViewModel vm, Part3DModel movedModel)
     {
-        var window = new Window
+        if (movedModel.Part == null) return;
+        var partId = movedModel.Part.Id;
+
+        foreach (var jl in vm.JointLines)
         {
-            Title = "Join Parts",
-            Width = 420,
-            Height = 460,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            ShowInTaskbar = false,
-            DataContext = vm,
-        };
+            // Find the matching joint to determine which end to move
+            var project = vm.Project;
+            if (project == null) continue;
 
-        // Build UI programmatically (same pattern as AddHardwareDialog)
-        var panel = new DockPanel { Margin = new Thickness(20) };
+            foreach (var joint in project.Joinery)
+            {
+                var modelA = vm.Models.FirstOrDefault(m => m.Part?.Id == joint.PartAId);
+                var modelB = vm.Models.FirstOrDefault(m => m.Part?.Id == joint.PartBId);
+                if (modelA == null || modelB == null) continue;
 
-        // Header
-        var header = new TextBlock
+                if (joint.PartAId == partId || joint.PartBId == partId)
+                {
+                    jl.StartX = modelA.PositionX + modelA.SizeX / 2;
+                    jl.StartY = modelA.PositionY + modelA.SizeY / 2;
+                    jl.EndX = modelB.PositionX + modelB.SizeX / 2;
+                    jl.EndY = modelB.PositionY + modelB.SizeY / 2;
+                }
+            }
+        }
+
+        RedrawJointLines();
+    }
+
+    private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        var delta = e.Delta.Y;
+        var factor = delta > 0 ? 1.1 : 0.9;
+        _zoomScale = Math.Clamp(_zoomScale * factor, 0.2, 5.0);
+        ApplyViewportTransform();
+
+        if (DataContext is Viewer3DViewModel vm)
+            vm.CameraDistance = Math.Round(100 / _zoomScale);
+
+        e.Handled = true;
+    }
+
+    private void OnViewportPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        var props = e.GetCurrentPoint(this).Properties;
+        if (props.IsMiddleButtonPressed)
         {
-            Text = "Join Parts",
-            FontSize = 20,
-            FontWeight = FontWeight.SemiBold,
-            Margin = new Thickness(0, 0, 0, 16),
-        };
-        DockPanel.SetDock(header, Dock.Top);
-        panel.Children.Add(header);
+            _isPanning = true;
+            _panStart = e.GetPosition(this);
+            _panStartOffsetX = _panOffsetX;
+            _panStartOffsetY = _panOffsetY;
+            e.Pointer.Capture(this);
+            e.Handled = true;
+        }
+    }
 
-        // Part names display
-        var partInfo = new StackPanel { Spacing = 4, Margin = new Thickness(0, 0, 0, 16) };
-        var partALabel = new TextBlock { FontSize = 12 };
-        partALabel.Bind(TextBlock.TextProperty, new Avalonia.Data.Binding("PartAName") { StringFormat = "Part A: {0}" });
-        var partBLabel = new TextBlock { FontSize = 12 };
-        partBLabel.Bind(TextBlock.TextProperty, new Avalonia.Data.Binding("PartBName") { StringFormat = "Part B: {0}" });
-        partInfo.Children.Add(partALabel);
-        partInfo.Children.Add(partBLabel);
-        DockPanel.SetDock(partInfo, Dock.Top);
-        panel.Children.Add(partInfo);
+    private void OnViewportPointerMoved(object? sender, PointerEventArgs e)
+    {
+        if (!_isPanning) return;
 
-        // Joinery type selector
-        var typeLabel = new TextBlock
+        var current = e.GetPosition(this);
+        _panOffsetX = _panStartOffsetX + (current.X - _panStart.X);
+        _panOffsetY = _panStartOffsetY + (current.Y - _panStart.Y);
+        ApplyViewportTransform();
+        e.Handled = true;
+    }
+
+    private void OnViewportPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (_isPanning)
         {
-            Text = "Joint Type",
-            FontWeight = FontWeight.SemiBold,
-            Margin = new Thickness(0, 0, 0, 4),
-        };
-        DockPanel.SetDock(typeLabel, Dock.Top);
-        panel.Children.Add(typeLabel);
+            _isPanning = false;
+            e.Pointer.Capture(null);
+            e.Handled = true;
+        }
+    }
 
-        var typeList = new ListBox
+    private void ApplyViewportTransform()
+    {
+        var viewport = this.FindControl<Grid>("ViewportGrid");
+        if (viewport == null) return;
+
+        viewport.RenderTransform = new TransformGroup
         {
-            MaxHeight = 200,
-            Margin = new Thickness(0, 0, 0, 8),
+            Children =
+            {
+                new ScaleTransform(_zoomScale, _zoomScale),
+                new TranslateTransform(_panOffsetX, _panOffsetY),
+            }
         };
-        typeList.Bind(ListBox.ItemsSourceProperty, new Avalonia.Data.Binding("JoineryTypes"));
-        typeList.Bind(ListBox.SelectedItemProperty, new Avalonia.Data.Binding("SelectedType"));
-        DockPanel.SetDock(typeList, Dock.Top);
-        panel.Children.Add(typeList);
-
-        // Description
-        var descLabel = new TextBlock
-        {
-            TextWrapping = TextWrapping.Wrap,
-            FontSize = 11,
-            Margin = new Thickness(0, 0, 0, 16),
-        };
-        descLabel.Bind(TextBlock.TextProperty, new Avalonia.Data.Binding("Description"));
-        DockPanel.SetDock(descLabel, Dock.Top);
-        panel.Children.Add(descLabel);
-
-        // Buttons
-        var buttonPanel = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            HorizontalAlignment = HorizontalAlignment.Right,
-            Spacing = 12,
-        };
-        DockPanel.SetDock(buttonPanel, Dock.Bottom);
-
-        var cancelBtn = new Button { Content = "Cancel", Padding = new Thickness(20, 10) };
-        cancelBtn.Click += (_, _) => { vm.DialogResult = false; window.Close(); };
-        buttonPanel.Children.Add(cancelBtn);
-
-        var confirmBtn = new Button
-        {
-            Content = "Create Joint",
-            Padding = new Thickness(20, 10),
-            Classes = { "primary" },
-        };
-        confirmBtn.Click += (_, _) => { vm.DialogResult = true; window.Close(); };
-        buttonPanel.Children.Add(confirmBtn);
-
-        panel.Children.Add(buttonPanel);
-        window.Content = panel;
-
-        vm.CloseRequested = () => window.Close();
-
-        return window;
     }
 
     private (double x, double y) SnapToEdges(Viewer3DViewModel vm, Part3DModel dragging, double x, double y)

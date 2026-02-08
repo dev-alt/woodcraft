@@ -66,7 +66,11 @@ public partial class Viewer3DViewModel : ViewModelBase
     {
         if (value != null)
         {
-            _ = RefreshModelsAsync();
+            _ = RefreshModelsAsync().ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                    StatusMessage = $"Failed to load models: {t.Exception?.InnerException?.Message}";
+            }, TaskScheduler.FromCurrentSynchronizationContext());
         }
         else
         {

@@ -82,6 +82,18 @@
                     <Button Classes="icon-btn" Command="{Binding DuplicatePartCommand}" ToolTip.Tip="Duplicate Part">
                         <PathIcon Data="{StaticResource IconDuplicate}" Width="14" Height="14"/>
                     </Button>
+
+                    <Separator Classes="vertical"/>
+
+                    <Button Classes="icon-btn" Command="{Binding RenamePartCommand}" ToolTip.Tip="Rename Part (F2)">
+                        <PathIcon Data="{StaticResource IconEdit}" Width="14" Height="14"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding MovePartUpCommand}" ToolTip.Tip="Move Up">
+                        <PathIcon Data="{StaticResource IconChevronUp}" Width="14" Height="14"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding MovePartDownCommand}" ToolTip.Tip="Move Down">
+                        <PathIcon Data="{StaticResource IconChevronDown}" Width="14" Height="14"/>
+                    </Button>
                 </StackPanel>
             </Border>
 

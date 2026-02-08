@@ -31,7 +31,7 @@ public class BoolToColorConverter : IValueConverter
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        return Avalonia.Data.BindingOperations.DoNothing;
     }
 }
 
@@ -51,7 +51,7 @@ public class ScaleConverter : IValueConverter
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        return Avalonia.Data.BindingOperations.DoNothing;
     }
 }
 
@@ -91,7 +91,7 @@ public class InchesToFractionConverter : IValueConverter
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        return Avalonia.Data.BindingOperations.DoNothing;
     }
 }
 
@@ -111,6 +111,6 @@ public class BoolToFontWeightConverter : IValueConverter
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        return Avalonia.Data.BindingOperations.DoNothing;
     }
 }

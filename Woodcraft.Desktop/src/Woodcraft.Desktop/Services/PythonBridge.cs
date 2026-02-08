@@ -175,11 +175,14 @@ public class PythonBridge : IPythonBridge
             _logger.LogDebug("Sending request: {Request}", requestJson);
 
             // Send request
-            await _stdin!.WriteLineAsync(requestJson);
+            if (_stdin == null || _stdout == null)
+                throw new InvalidOperationException("Python bridge is not connected. Streams are null.");
+
+            await _stdin.WriteLineAsync(requestJson);
             await _stdin.FlushAsync();
 
             // Read response
-            var responseJson = await _stdout!.ReadLineAsync(cancellationToken)
+            var responseJson = await _stdout.ReadLineAsync(cancellationToken)
                 ?? throw new InvalidOperationException("No response from Python server");
 
             _logger.LogDebug("Received response: {Response}", responseJson);
