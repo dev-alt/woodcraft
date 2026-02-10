@@ -7,6 +7,7 @@
         x:DataType="vm:MainWindowViewModel"
         x:CompileBindings="True"
         Title="{Binding Title}"
+        Icon="/Assets/Icons/icon-32.png"
         Width="1400" Height="900"
         MinWidth="1000" MinHeight="700"
         WindowStartupLocation="CenterScreen"
@@ -87,6 +88,11 @@
                 <MenuItem Header="_Bill of Materials" Command="{Binding GenerateBOMCommand}">
                     <MenuItem.Icon>
                         <PathIcon Data="{StaticResource IconBOM}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Assembly Guide" Command="{Binding GenerateAssemblyCommand}">
+                    <MenuItem.Icon>
+                        <PathIcon Data="{StaticResource IconAssembly}" Foreground="{DynamicResource TextSecondaryBrush}"/>
                     </MenuItem.Icon>
                 </MenuItem>
             </MenuItem>
@@ -256,6 +262,15 @@
                         </StackPanel>
                     </TabItem.Header>
                     <views:BOMView DataContext="{Binding BOMViewModel}"/>
+                </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconAssembly}" Width="14" Height="14"/>
+                            <TextBlock Text="Assembly"/>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <views:AssemblyView DataContext="{Binding AssemblyViewModel}"/>
                 </TabItem>
             </TabControl>
 

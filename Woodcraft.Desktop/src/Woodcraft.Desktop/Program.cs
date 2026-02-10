@@ -53,6 +53,7 @@ public static class Program
         services.AddTransient<CutListViewModel>();
         services.AddTransient<BOMViewModel>();
         services.AddTransient<DrawingViewModel>();
+        services.AddTransient<AssemblyViewModel>();
 
         return services.BuildServiceProvider();
     }

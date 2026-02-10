@@ -1,0 +1,175 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Woodcraft.Desktop.ViewModels"
+             xmlns:models="using:Woodcraft.Core.Models"
+             x:Class="Woodcraft.Desktop.Views.AssemblyView"
+             x:DataType="vm:AssemblyViewModel"
+             x:CompileBindings="True">
+
+    <DockPanel>
+        <!-- Toolbar -->
+        <Border DockPanel.Dock="Top" Classes="toolbar">
+            <StackPanel Orientation="Horizontal" Spacing="2">
+                <Button Classes="ghost" Command="{Binding GenerateStepsCommand}" ToolTip.Tip="Auto-generate steps from joints">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <PathIcon Data="{StaticResource IconGenerate}" Width="14" Height="14"/>
+                        <TextBlock Text="Generate Steps"/>
+                    </StackPanel>
+                </Button>
+
+                <Separator Classes="vertical"/>
+
+                <Button Classes="icon-btn" Command="{Binding AddStepCommand}" ToolTip.Tip="Add Step">
+                    <PathIcon Data="{StaticResource IconAdd}" Width="14" Height="14"/>
+                </Button>
+                <Button Classes="icon-btn" Command="{Binding RemoveStepCommand}" ToolTip.Tip="Remove Step">
+                    <PathIcon Data="{StaticResource IconDelete}" Width="14" Height="14"/>
+                </Button>
+                <Button Classes="icon-btn" Command="{Binding MoveStepUpCommand}" ToolTip.Tip="Move Up">
+                    <PathIcon Data="{StaticResource IconChevronUp}" Width="14" Height="14"/>
+                </Button>
+                <Button Classes="icon-btn" Command="{Binding MoveStepDownCommand}" ToolTip.Tip="Move Down">
+                    <PathIcon Data="{StaticResource IconChevronDown}" Width="14" Height="14"/>
+                </Button>
+
+                <Separator Classes="vertical"/>
+
+                <Button Classes="icon-btn" Command="{Binding PreviousStepCommand}" ToolTip.Tip="Previous Step">
+                    <PathIcon Data="{StaticResource IconChevronLeft}" Width="14" Height="14"/>
+                </Button>
+                <Button Classes="icon-btn" Command="{Binding NextStepCommand}" ToolTip.Tip="Next Step">
+                    <PathIcon Data="{StaticResource IconChevronRight}" Width="14" Height="14"/>
+                </Button>
+
+                <Separator Classes="vertical"/>
+
+                <Button Classes="ghost" Command="{Binding ExportMarkdownCommand}" ToolTip.Tip="Export as Markdown">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <PathIcon Data="{StaticResource IconExport}" Width="14" Height="14"/>
+                        <TextBlock Text="Export"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- Empty state -->
+        <Panel IsVisible="{Binding !Steps.Count}">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
+                <PathIcon Data="{StaticResource IconAssembly}" Width="48" Height="48"
+                          Foreground="{DynamicResource TextTertiaryBrush}"
+                          HorizontalAlignment="Center"/>
+                <TextBlock Text="No Assembly Steps"
+                           FontSize="16" FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                <TextBlock Text="Click 'Generate Steps' to auto-create steps from joints, or add steps manually."
+                           TextWrapping="Wrap" TextAlignment="Center"
+                           FontSize="12" MaxWidth="300"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           HorizontalAlignment="Center"/>
+                <Button Classes="primary" Command="{Binding GenerateStepsCommand}"
+                        HorizontalAlignment="Center" Padding="16,8" Margin="0,8,0,0">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <PathIcon Data="{StaticResource IconGenerate}" Width="14" Height="14"/>
+                        <TextBlock Text="Generate Steps"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Panel>
+
+        <!-- Main content when steps exist -->
+        <Grid ColumnDefinitions="280,Auto,*"
+              IsVisible="{Binding Steps.Count}">
+
+            <!-- Left: Step list -->
+            <Border Grid.Column="0" Classes="panel">
+                <DockPanel>
+                    <Border DockPanel.Dock="Top" Classes="panel-header">
+                        <TextBlock Text="Steps" Classes="panel-title"/>
+                    </Border>
+                    <ListBox ItemsSource="{Binding Steps}"
+                             SelectedIndex="{Binding CurrentStepIndex}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:AssemblyStep">
+                                <StackPanel Spacing="2" Margin="4">
+                                    <TextBlock FontWeight="SemiBold" FontSize="12">
+                                        <Run Text="Step "/>
+                                        <Run Text="{Binding StepNumber}"/>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding Description}"
+                                               FontSize="11" TextTrimming="CharacterEllipsis"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Width="4" ResizeDirection="Columns"/>
+
+            <!-- Right: Step detail editor -->
+            <Border Grid.Column="2" Classes="panel"
+                    IsVisible="{Binding CurrentStep, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <ScrollViewer>
+                    <StackPanel Margin="16" Spacing="12">
+                        <!-- Step header -->
+                        <TextBlock FontSize="16" FontWeight="SemiBold">
+                            <Run Text="Step "/>
+                            <Run Text="{Binding CurrentStep.StepNumber}"/>
+                        </TextBlock>
+
+                        <!-- Description -->
+                        <Border Classes="card">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Description" Classes="subheading"/>
+                                <Separator Margin="-12,4,-12,4"/>
+                                <TextBox Text="{Binding EditDescription}"
+                                         AcceptsReturn="True"
+                                         TextWrapping="Wrap"
+                                         Height="80"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Notes -->
+                        <Border Classes="card">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Notes" Classes="subheading"/>
+                                <Separator Margin="-12,4,-12,4"/>
+                                <TextBox Text="{Binding EditNotes}"
+                                         AcceptsReturn="True"
+                                         TextWrapping="Wrap"
+                                         Height="60"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Parts involved -->
+                        <Border Classes="card">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Parts Involved" Classes="subheading"/>
+                                <Separator Margin="-12,4,-12,4"/>
+                                <ItemsControl ItemsSource="{Binding AvailableParts}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:PartCheckItem">
+                                            <CheckBox IsChecked="{Binding IsSelected}"
+                                                      Content="{Binding PartId}"
+                                                      Margin="0,2"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Save button -->
+                        <Button Command="{Binding SaveStepEditsCommand}" Classes="primary" Padding="16,8">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <PathIcon Data="{StaticResource IconCheck}" Width="14" Height="14"/>
+                                <TextBlock Text="Save Step"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

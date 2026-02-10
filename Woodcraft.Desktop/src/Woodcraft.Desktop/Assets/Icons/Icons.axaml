@@ -69,6 +69,16 @@
     <StreamGeometry x:Key="IconExpand">M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z</StreamGeometry>
     <StreamGeometry x:Key="IconCollapse">M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z</StreamGeometry>
 
+    <!-- Alignment -->
+    <StreamGeometry x:Key="IconAlignLeft">M4 22H2V2h2v20zM22 7H6v3h16V7zm-6 7H6v3h10v-3z</StreamGeometry>
+    <StreamGeometry x:Key="IconAlignTop">M22 2v2H2V2h20zM7 22V6h3v16H7zm7-6V6h3v10h-3z</StreamGeometry>
+    <StreamGeometry x:Key="IconAlignCenterH">M2 11h5V7h3v4h4V7h3v4h5v2h-5v4h-3v-4h-4v4H7v-4H2v-2z</StreamGeometry>
+    <StreamGeometry x:Key="IconAlignCenterV">M11 2v5H7v3h4v4H7v3h4v5h2v-5h4v-3h-4v-4h4V7h-4V2h-2z</StreamGeometry>
+    <StreamGeometry x:Key="IconDistributeH">M4 22H2V2h2v20zM22 2h-2v20h2V2zM13 7h-2v10h2V7zm5 2h-2v6h2V9zM8 9H6v6h2V9z</StreamGeometry>
+    <StreamGeometry x:Key="IconDistributeV">M2 2v2h20V2H2zm0 18h20v2H2v-2zm5-7v-2h10v2H7zM9 8v-2h6v2H9zm-2 9v-2h10v2H7z</StreamGeometry>
+    <!-- Assembly -->
+    <StreamGeometry x:Key="IconAssembly">M22 11V3h-7v3H9V3H2v8h7V8h2v10h4v3h7v-8h-7v3h-2V8h2v3h7z</StreamGeometry>
+
     <!-- Misc -->
     <StreamGeometry x:Key="IconHelp">M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z</StreamGeometry>
     <StreamGeometry x:Key="IconAbout">M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 5h2v2h-2V7zm0 4h2v6h-2v-6z</StreamGeometry>

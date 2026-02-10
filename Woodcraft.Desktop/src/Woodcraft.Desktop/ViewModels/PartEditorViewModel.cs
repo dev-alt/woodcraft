@@ -49,6 +49,23 @@ public partial class PartEditorViewModel : ViewModelBase
     [ObservableProperty]
     private string _notes = string.Empty;
 
+    // Position & Rotation
+    [ObservableProperty]
+    private double _positionX;
+
+    [ObservableProperty]
+    private double _positionY;
+
+    [ObservableProperty]
+    private double _positionZ;
+
+    [ObservableProperty]
+    private double _rotationZ;
+
+    // Per-part cost estimate
+    [ObservableProperty]
+    private string _estimatedCostText = string.Empty;
+
     public ObservableCollection<PartType> PartTypes { get; } =
         new(Enum.GetValues<PartType>());
 
@@ -96,6 +113,12 @@ public partial class PartEditorViewModel : ViewModelBase
         Material = value.Material ?? "pine";
         GrainDirection = value.GrainDirection;
         Notes = value.Notes;
+        PositionX = value.Position[0];
+        PositionY = value.Position[1];
+        PositionZ = value.Position[2];
+        RotationZ = value.Rotation[2];
+
+        UpdateCostEstimate();
 
         // Sync material info selection
         _selectedMaterialInfo = MaterialOptions.FirstOrDefault(m => m.Id == Material);
@@ -131,6 +154,24 @@ public partial class PartEditorViewModel : ViewModelBase
         ChangesApplied?.Invoke();
     }
 
+    public void SyncPositionFromPart(Part part)
+    {
+        PositionX = part.Position[0];
+        PositionY = part.Position[1];
+        PositionZ = part.Position[2];
+    }
+
+    private void UpdateCostEstimate()
+    {
+        var (cost, desc) = CostHelper.EstimateCost(Material, Length, Width, Thickness, Quantity);
+        EstimatedCostText = $"Est. Cost: ${cost:F2} ({desc})";
+    }
+
+    partial void OnLengthChanged(double value) => UpdateCostEstimate();
+    partial void OnWidthChanged(double value) => UpdateCostEstimate();
+    partial void OnThicknessChanged(double value) => UpdateCostEstimate();
+    partial void OnQuantityChanged(int value) => UpdateCostEstimate();
+
     partial void OnMaterialChanged(string value)
     {
         var info = MaterialOptions.FirstOrDefault(m => m.Id == value);
@@ -139,6 +180,7 @@ public partial class PartEditorViewModel : ViewModelBase
             _selectedMaterialInfo = info;
             OnPropertyChanged(nameof(SelectedMaterialInfo));
         }
+        UpdateCostEstimate();
     }
 
     private void ClearFields()
@@ -152,6 +194,11 @@ public partial class PartEditorViewModel : ViewModelBase
         Material = "pine";
         GrainDirection = GrainDirection.Length;
         Notes = string.Empty;
+        PositionX = 0;
+        PositionY = 0;
+        PositionZ = 0;
+        RotationZ = 0;
+        EstimatedCostText = string.Empty;
         _selectedMaterialInfo = MaterialOptions.FirstOrDefault(m => m.Id == "pine");
         OnPropertyChanged(nameof(SelectedMaterialInfo));
     }
@@ -168,6 +215,16 @@ public partial class PartEditorViewModel : ViewModelBase
         Part.Material = Material;
         Part.GrainDirection = GrainDirection;
         Part.Notes = Notes;
+        Part.Position[0] = PositionX;
+        Part.Position[1] = PositionY;
+        Part.Position[2] = PositionZ;
+        Part.Rotation[2] = RotationZ;
+
+        // Save joint parameters
+        foreach (var jd in PartJoints)
+        {
+            jd.SaveParameters();
+        }
 
         await _projectService.UpdatePartAsync(Part);
         ChangesApplied?.Invoke();
@@ -232,4 +289,67 @@ public partial class PartEditorViewModel : ViewModelBase
     }
 }
 
-public record JointDisplay(Joint Joint, string TypeName, string OtherPartId);
+public partial class JointDisplay : ObservableObject
+{
+    public Joint Joint { get; }
+    public string TypeName { get; }
+    public string OtherPartId { get; }
+
+    [ObservableProperty]
+    private bool _isExpanded;
+
+    public ObservableCollection<JointParameterValue> ParameterValues { get; } = [];
+    public bool HasParameters => ParameterValues.Count > 0;
+
+    public JointDisplay(Joint joint, string typeName, string otherPartId)
+    {
+        Joint = joint;
+        TypeName = typeName;
+        OtherPartId = otherPartId;
+        LoadParameters();
+    }
+
+    private void LoadParameters()
+    {
+        var defs = JointParameterDefinitions.GetParametersForType(Joint.JoineryType);
+        foreach (var def in defs)
+        {
+            double value = def.DefaultValue;
+            if (Joint.Parameters != null && Joint.Parameters.TryGetValue(def.Key, out var stored))
+            {
+                if (stored is double d) value = d;
+                else if (stored is System.Text.Json.JsonElement je && je.TryGetDouble(out var jd)) value = jd;
+                else if (double.TryParse(stored?.ToString(), out var parsed)) value = parsed;
+            }
+            ParameterValues.Add(new JointParameterValue(def, value));
+        }
+        OnPropertyChanged(nameof(HasParameters));
+    }
+
+    [RelayCommand]
+    private void ToggleExpanded() => IsExpanded = !IsExpanded;
+
+    public void SaveParameters()
+    {
+        if (ParameterValues.Count == 0) return;
+        Joint.Parameters ??= new Dictionary<string, object>();
+        foreach (var pv in ParameterValues)
+        {
+            Joint.Parameters[pv.Definition.Key] = pv.Value;
+        }
+    }
+}
+
+public partial class JointParameterValue : ObservableObject
+{
+    public JointParamDef Definition { get; }
+
+    [ObservableProperty]
+    private double _value;
+
+    public JointParameterValue(JointParamDef definition, double value)
+    {
+        Definition = definition;
+        _value = value;
+    }
+}

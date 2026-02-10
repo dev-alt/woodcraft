@@ -47,6 +47,7 @@ public partial class MainWindowViewModel : ViewModelBase
     public CutListViewModel CutListViewModel { get; }
     public BOMViewModel BOMViewModel { get; }
     public DrawingViewModel DrawingViewModel { get; }
+    public AssemblyViewModel AssemblyViewModel { get; }
 
     public ObservableCollection<string> RecentFiles { get; } = [];
 
@@ -67,6 +68,7 @@ public partial class MainWindowViewModel : ViewModelBase
         CutListViewModel = services.GetRequiredService<CutListViewModel>();
         BOMViewModel = services.GetRequiredService<BOMViewModel>();
         DrawingViewModel = services.GetRequiredService<DrawingViewModel>();
+        AssemblyViewModel = services.GetRequiredService<AssemblyViewModel>();
 
         // Subscribe to events
         _projectService.CurrentProjectChanged += OnProjectChanged;
@@ -105,6 +107,20 @@ public partial class MainWindowViewModel : ViewModelBase
             }
         };
 
+        // Sync drag position back to editor
+        Viewer3DViewModel.PartPositionChanged += part =>
+        {
+            if (SelectedPart?.Id == part.Id)
+                PartEditorViewModel.SyncPositionFromPart(part);
+        };
+
+        // Assembly step highlighting
+        AssemblyViewModel.CurrentStepChanged += (step, allSteps, index) =>
+        {
+            if (SelectedTabIndex == 4) // Assembly tab
+                Viewer3DViewModel.HighlightAssemblyStep(step, allSteps, index);
+        };
+
         // Set default view
         CurrentView = ProjectViewModel;
     }
@@ -129,6 +145,7 @@ public partial class MainWindowViewModel : ViewModelBase
             CutListViewModel.Project = project;
             BOMViewModel.Project = project;
             PartEditorViewModel.Project = project;
+            AssemblyViewModel.Project = project;
             StatusMessage = $"Project '{project.Name}' loaded with {project.Parts.Count} parts";
         }
         else
@@ -139,6 +156,7 @@ public partial class MainWindowViewModel : ViewModelBase
             CutListViewModel.Project = null;
             BOMViewModel.Project = null;
             PartEditorViewModel.Project = null;
+            AssemblyViewModel.Project = null;
             SelectedPart = null;
             StatusMessage = "Ready - Create or open a project to get started";
         }
@@ -534,6 +552,28 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             StatusMessage = $"Validation failed: {ex.Message}";
         }
+    }
+
+    partial void OnSelectedTabIndexChanged(int value)
+    {
+        if (value == 4) // Assembly tab
+        {
+            // Re-fire current step highlighting
+            if (AssemblyViewModel.CurrentStep != null)
+                Viewer3DViewModel.HighlightAssemblyStep(AssemblyViewModel.CurrentStep, AssemblyViewModel.Steps, AssemblyViewModel.CurrentStepIndex);
+        }
+        else
+        {
+            Viewer3DViewModel.ClearAssemblyHighlight();
+        }
+    }
+
+    [RelayCommand]
+    private void GenerateAssembly()
+    {
+        if (CurrentProject == null) return;
+        AssemblyViewModel.GenerateStepsCommand.Execute(null);
+        SelectedTabIndex = 4; // Switch to Assembly tab
     }
 
     public bool HasUnsavedChanges => CurrentProject?.IsDirty == true;

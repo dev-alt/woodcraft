@@ -40,6 +40,28 @@
                     <CheckBox Content="Exploded" IsChecked="{Binding ShowExploded}" Margin="4,0"/>
                     <CheckBox Content="Wireframe" IsChecked="{Binding ShowWireframe}" Margin="4,0"/>
                     <CheckBox Content="Dimensions" IsChecked="{Binding ShowDimensions}" Margin="4,0"/>
+
+                    <Separator Classes="vertical"/>
+
+                    <!-- Alignment Tools -->
+                    <Button Classes="icon-btn" Command="{Binding AlignLeftCommand}" ToolTip.Tip="Align Left">
+                        <PathIcon Data="{StaticResource IconAlignLeft}" Width="14" Height="14"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding AlignTopCommand}" ToolTip.Tip="Align Top">
+                        <PathIcon Data="{StaticResource IconAlignTop}" Width="14" Height="14"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding AlignCenterHCommand}" ToolTip.Tip="Align Center Horizontal">
+                        <PathIcon Data="{StaticResource IconAlignCenterH}" Width="14" Height="14"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding AlignCenterVCommand}" ToolTip.Tip="Align Center Vertical">
+                        <PathIcon Data="{StaticResource IconAlignCenterV}" Width="14" Height="14"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding DistributeHCommand}" ToolTip.Tip="Distribute Horizontal">
+                        <PathIcon Data="{StaticResource IconDistributeH}" Width="14" Height="14"/>
+                    </Button>
+                    <Button Classes="icon-btn" Command="{Binding DistributeVCommand}" ToolTip.Tip="Distribute Vertical">
+                        <PathIcon Data="{StaticResource IconDistributeV}" Width="14" Height="14"/>
+                    </Button>
                 </StackPanel>
 
                 <!-- Right: Export -->
@@ -169,15 +191,24 @@
                                     CornerRadius="2"
                                     BoxShadow="2 2 8 0 #40000000"
                                     Background="{Binding DisplayBrush}"
+                                    Opacity="{Binding AssemblyOpacity}"
                                     Cursor="Hand"
+                                    RenderTransformOrigin="0.5,0.5"
                                     PointerPressed="OnPartPointerPressed"
                                     PointerMoved="OnPartPointerMoved"
                                     PointerReleased="OnPartPointerReleased">
+                                <Border.RenderTransform>
+                                    <RotateTransform Angle="{Binding RotationZ}"/>
+                                </Border.RenderTransform>
                                 <Border BorderBrush="{Binding WoodBorderBrush}"
                                         BorderThickness="2"
                                         CornerRadius="2">
                                     <!-- Selection highlight overlay -->
                                     <Panel>
+                                        <!-- Grain direction overlay -->
+                                        <Border Background="{Binding GrainOverlayBrush}"
+                                                IsHitTestVisible="False"
+                                                CornerRadius="1"/>
                                         <Border Background="{DynamicResource AccentPrimaryBrush}"
                                                 Opacity="0.3"
                                                 IsVisible="{Binding IsSelected}"

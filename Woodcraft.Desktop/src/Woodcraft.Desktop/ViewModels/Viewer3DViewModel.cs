@@ -56,6 +56,7 @@ public partial class Viewer3DViewModel : ViewModelBase
     public ObservableCollection<JointLineModel> JointLines { get; } = [];
 
     public event Action? JointAdded;
+    public event Action<Part>? PartPositionChanged;
 
     public Viewer3DViewModel(ICadService cadService)
     {
@@ -136,6 +137,8 @@ public partial class Viewer3DViewModel : ViewModelBase
                     SizeZ = part.Dimensions.Thickness,
                     WoodBrush = MaterialInfo.CreateWoodBrush(part.Material),
                     WoodBorderBrush = MaterialInfo.CreateBorderBrush(part.Material),
+                    RotationZ = part.Rotation[2],
+                    GrainDirection = part.GrainDirection,
                 };
 
                 Models.Add(model);
@@ -276,6 +279,7 @@ public partial class Viewer3DViewModel : ViewModelBase
         if (model.Part == null) return;
         model.Part.Position[0] = model.PositionX - 20; // Remove layout offset
         model.Part.Position[1] = model.PositionY - 20;
+        PartPositionChanged?.Invoke(model.Part);
     }
 
     partial void OnSelectedPartChanged(Part? value)
@@ -324,6 +328,125 @@ public partial class Viewer3DViewModel : ViewModelBase
         foreach (var model in Models)
             model.ShowDimensionText = value;
     }
+
+    // --- Alignment Tools ---
+
+    private List<Part3DModel> GetAlignmentTargets()
+    {
+        // If primary + secondary selected, operate on those two
+        if (SelectedPart != null && SecondarySelectedPart != null)
+        {
+            return Models.Where(m =>
+                m.Part?.Id == SelectedPart.Id || m.Part?.Id == SecondarySelectedPart.Id).ToList();
+        }
+        return Models.ToList();
+    }
+
+    [RelayCommand]
+    private void AlignLeft()
+    {
+        var targets = GetAlignmentTargets();
+        if (targets.Count < 2) return;
+        var minX = targets.Min(m => m.PositionX);
+        foreach (var m in targets) { m.PositionX = minX; UpdatePartPosition(m); }
+        RebuildJointLines();
+    }
+
+    [RelayCommand]
+    private void AlignTop()
+    {
+        var targets = GetAlignmentTargets();
+        if (targets.Count < 2) return;
+        var minY = targets.Min(m => m.PositionY);
+        foreach (var m in targets) { m.PositionY = minY; UpdatePartPosition(m); }
+        RebuildJointLines();
+    }
+
+    [RelayCommand]
+    private void AlignCenterH()
+    {
+        var targets = GetAlignmentTargets();
+        if (targets.Count < 2) return;
+        var centerY = targets.Average(m => m.PositionY + m.SizeY / 2);
+        foreach (var m in targets) { m.PositionY = centerY - m.SizeY / 2; UpdatePartPosition(m); }
+        RebuildJointLines();
+    }
+
+    [RelayCommand]
+    private void AlignCenterV()
+    {
+        var targets = GetAlignmentTargets();
+        if (targets.Count < 2) return;
+        var centerX = targets.Average(m => m.PositionX + m.SizeX / 2);
+        foreach (var m in targets) { m.PositionX = centerX - m.SizeX / 2; UpdatePartPosition(m); }
+        RebuildJointLines();
+    }
+
+    [RelayCommand]
+    private void DistributeH()
+    {
+        var targets = GetAlignmentTargets().OrderBy(m => m.PositionX).ToList();
+        if (targets.Count < 3) return;
+        var totalWidth = targets.Sum(m => m.SizeX);
+        var totalSpace = targets.Last().PositionX + targets.Last().SizeX - targets.First().PositionX;
+        var gap = (totalSpace - totalWidth) / (targets.Count - 1);
+        var currentX = targets.First().PositionX;
+        foreach (var m in targets)
+        {
+            m.PositionX = currentX;
+            currentX += m.SizeX + gap;
+            UpdatePartPosition(m);
+        }
+        RebuildJointLines();
+    }
+
+    [RelayCommand]
+    private void DistributeV()
+    {
+        var targets = GetAlignmentTargets().OrderBy(m => m.PositionY).ToList();
+        if (targets.Count < 3) return;
+        var totalHeight = targets.Sum(m => m.SizeY);
+        var totalSpace = targets.Last().PositionY + targets.Last().SizeY - targets.First().PositionY;
+        var gap = (totalSpace - totalHeight) / (targets.Count - 1);
+        var currentY = targets.First().PositionY;
+        foreach (var m in targets)
+        {
+            m.PositionY = currentY;
+            currentY += m.SizeY + gap;
+            UpdatePartPosition(m);
+        }
+        RebuildJointLines();
+    }
+
+    // --- Assembly Highlighting ---
+
+    public void HighlightAssemblyStep(Woodcraft.Core.Models.AssemblyStep? step, IList<Woodcraft.Core.Models.AssemblyStep> allSteps, int currentIndex)
+    {
+        if (step == null) { ClearAssemblyHighlight(); return; }
+
+        // Collect part IDs for current and previous steps
+        var currentPartIds = new HashSet<string>(step.PartIds);
+        var previousPartIds = new HashSet<string>();
+        for (int i = 0; i < currentIndex; i++)
+            foreach (var id in allSteps[i].PartIds) previousPartIds.Add(id);
+
+        foreach (var model in Models)
+        {
+            var partId = model.Part?.Id ?? "";
+            if (currentPartIds.Contains(partId))
+                model.AssemblyOpacity = 1.0;
+            else if (previousPartIds.Contains(partId))
+                model.AssemblyOpacity = 0.5;
+            else
+                model.AssemblyOpacity = 0.15;
+        }
+    }
+
+    public void ClearAssemblyHighlight()
+    {
+        foreach (var model in Models)
+            model.AssemblyOpacity = 1.0;
+    }
 }
 
 public partial class Part3DModel : ObservableObject
@@ -366,6 +489,15 @@ public partial class Part3DModel : ObservableObject
     [ObservableProperty]
     private bool _showDimensionText = true;
 
+    [ObservableProperty]
+    private double _rotationZ;
+
+    [ObservableProperty]
+    private GrainDirection _grainDirection = GrainDirection.None;
+
+    [ObservableProperty]
+    private double _assemblyOpacity = 1.0;
+
     // Material-specific wood appearance
     [ObservableProperty]
     private IBrush _woodBrush = new SolidColorBrush(Color.Parse("#CD853F"));
@@ -382,6 +514,67 @@ public partial class Part3DModel : ObservableObject
 
     partial void OnIsWireframeChanged(bool value) => OnPropertyChanged(nameof(DisplayBrush));
     partial void OnWoodBrushChanged(IBrush value) => OnPropertyChanged(nameof(DisplayBrush));
+
+    /// <summary>
+    /// Returns a VisualBrush with grain lines based on GrainDirection.
+    /// </summary>
+    public IBrush? GrainOverlayBrush => GrainDirection switch
+    {
+        GrainDirection.Length => CreateGrainBrush(horizontal: true),
+        GrainDirection.Width => CreateGrainBrush(horizontal: false),
+        _ => null
+    };
+
+    partial void OnGrainDirectionChanged(GrainDirection value) => OnPropertyChanged(nameof(GrainOverlayBrush));
+
+    private static IBrush CreateGrainBrush(bool horizontal)
+    {
+        var lineColor = Color.FromArgb(30, 0, 0, 0);
+        var lineBrush = new SolidColorBrush(lineColor);
+
+        if (horizontal)
+        {
+            return new VisualBrush
+            {
+                TileMode = TileMode.Tile,
+                SourceRect = new RelativeRect(0, 0, 20, 6, RelativeUnit.Absolute),
+                DestinationRect = new RelativeRect(0, 0, 20, 6, RelativeUnit.Absolute),
+                Visual = new Avalonia.Controls.Canvas
+                {
+                    Width = 20, Height = 6,
+                    Children =
+                    {
+                        new Avalonia.Controls.Shapes.Line
+                        {
+                            StartPoint = new Point(0, 3), EndPoint = new Point(20, 3),
+                            Stroke = lineBrush, StrokeThickness = 1
+                        }
+                    }
+                }
+            };
+        }
+        else
+        {
+            return new VisualBrush
+            {
+                TileMode = TileMode.Tile,
+                SourceRect = new RelativeRect(0, 0, 6, 20, RelativeUnit.Absolute),
+                DestinationRect = new RelativeRect(0, 0, 6, 20, RelativeUnit.Absolute),
+                Visual = new Avalonia.Controls.Canvas
+                {
+                    Width = 6, Height = 20,
+                    Children =
+                    {
+                        new Avalonia.Controls.Shapes.Line
+                        {
+                            StartPoint = new Point(3, 0), EndPoint = new Point(3, 20),
+                            Stroke = lineBrush, StrokeThickness = 1
+                        }
+                    }
+                }
+            };
+        }
+    }
 }
 
 public partial class JointLineModel : ObservableObject

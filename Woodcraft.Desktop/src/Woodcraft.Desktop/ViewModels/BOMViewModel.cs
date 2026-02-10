@@ -107,21 +107,6 @@ public partial class BOMViewModel : ViewModelBase
 
     private BillOfMaterials GenerateLocalBOM()
     {
-        // Rough lumber cost per board foot by species
-        var costPerBF = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["pine"] = 3.50, ["poplar"] = 4.00, ["soft_maple"] = 5.00,
-            ["red_oak"] = 6.50, ["white_oak"] = 7.50, ["hard_maple"] = 7.00,
-            ["cherry"] = 8.50, ["walnut"] = 12.00, ["ash"] = 6.00,
-            ["birch"] = 5.50, ["hickory"] = 7.00,
-            ["plywood"] = 0.0, ["mdf"] = 0.0 // priced per sheet
-        };
-
-        var sheetCost = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["plywood"] = 45.00, ["mdf"] = 30.00
-        };
-
         // Group parts by material
         var byMaterial = Project!.Parts
             .GroupBy(p => p.Material ?? "pine")
@@ -135,7 +120,7 @@ public partial class BOMViewModel : ViewModelBase
         foreach (var group in byMaterial)
         {
             var material = group.Key;
-            var isSheet = sheetCost.ContainsKey(material);
+            var isSheet = CostHelper.SheetCost.ContainsKey(material);
 
             foreach (var part in group)
             {
@@ -148,7 +133,7 @@ public partial class BOMViewModel : ViewModelBase
                 {
                     // Sheet goods: price per 4x8 sheet (32 sq ft)
                     var sheetsNeeded = Math.Ceiling(sqft / 32.0);
-                    unitCost = sheetCost.GetValueOrDefault(material, 40.0);
+                    unitCost = CostHelper.SheetCost.GetValueOrDefault(material, 40.0);
                     total = sheetsNeeded * unitCost;
                     unit = "sheet";
                     desc = $"{part.Dimensions} - {material}";
@@ -167,7 +152,7 @@ public partial class BOMViewModel : ViewModelBase
                 }
                 else
                 {
-                    unitCost = costPerBF.GetValueOrDefault(material, 5.0);
+                    unitCost = CostHelper.CostPerBF.GetValueOrDefault(material, 5.0);
                     total = bf * unitCost;
                     unit = "bd ft";
                     desc = $"{part.Dimensions} - {material}";

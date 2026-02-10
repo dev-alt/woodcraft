@@ -7,6 +7,8 @@ namespace Woodcraft.Desktop.Views;
 
 public partial class MainWindow : Window
 {
+    private bool _forceClose;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -14,17 +16,17 @@ public partial class MainWindow : Window
 
     protected override async void OnClosing(WindowClosingEventArgs e)
     {
-        if (DataContext is MainWindowViewModel vm && vm.HasUnsavedChanges)
+        if (!_forceClose && DataContext is MainWindowViewModel vm && vm.HasUnsavedChanges)
         {
             e.Cancel = true;
             var canClose = await vm.ConfirmDiscardChangesAsync();
             if (canClose)
             {
                 await vm.CleanupAsync();
-                // Re-close without prompting again
-                e.Cancel = false;
+                _forceClose = true;
                 Close();
             }
+            return;
         }
 
         base.OnClosing(e);

@@ -37,6 +37,10 @@ public partial class Project : ObservableObject
     [JsonPropertyName("hardware")]
     private ObservableCollection<Hardware> _hardware = [];
 
+    [ObservableProperty]
+    [JsonPropertyName("assembly_steps")]
+    private ObservableCollection<AssemblyStep> _assemblySteps = [];
+
     /// <summary>
     /// File path if the project has been saved.
     /// </summary>
