@@ -52,19 +52,34 @@ public partial class DrawingViewModel : ViewModelBase
     public ObservableCollection<double> Scales { get; } = [0.25, 0.5, 0.75, 1.0, 1.5, 2.0];
 
     // Display scale: pixels per inch for the XAML view
-    private const double DisplayPpi = 4.0;
+    private double _displayPpi = 4.0;
+
+    // SVG generation parameters
+    private double _margin = 60;
+    private double _spacing = 80;
+    private double _titleBlockH = 60;
 
     // Computed view dimensions (scaled for display)
-    public double TopViewWidth => (SelectedPart?.Dimensions.Length ?? 100) * DisplayPpi * Scale;
-    public double TopViewHeight => (SelectedPart?.Dimensions.Width ?? 50) * DisplayPpi * Scale;
-    public double FrontViewWidth => (SelectedPart?.Dimensions.Length ?? 100) * DisplayPpi * Scale;
-    public double FrontViewHeight => (SelectedPart?.Dimensions.Thickness ?? 20) * DisplayPpi * Scale;
-    public double SideViewWidth => (SelectedPart?.Dimensions.Width ?? 50) * DisplayPpi * Scale;
-    public double SideViewHeight => (SelectedPart?.Dimensions.Thickness ?? 20) * DisplayPpi * Scale;
+    public double TopViewWidth => (SelectedPart?.Dimensions.Length ?? 100) * _displayPpi * Scale;
+    public double TopViewHeight => (SelectedPart?.Dimensions.Width ?? 50) * _displayPpi * Scale;
+    public double FrontViewWidth => (SelectedPart?.Dimensions.Length ?? 100) * _displayPpi * Scale;
+    public double FrontViewHeight => (SelectedPart?.Dimensions.Thickness ?? 20) * _displayPpi * Scale;
+    public double SideViewWidth => (SelectedPart?.Dimensions.Width ?? 50) * _displayPpi * Scale;
+    public double SideViewHeight => (SelectedPart?.Dimensions.Thickness ?? 20) * _displayPpi * Scale;
 
-    public DrawingViewModel(ICadService cadService)
+    public DrawingViewModel(ICadService cadService, IConfigService config)
     {
         _cadService = cadService;
+
+        _scale = config.GetDouble("drawing.default_scale", 1.0);
+        _displayPpi = config.GetDouble("drawing.display_ppi", 4.0);
+        _margin = config.GetDouble("drawing.margin", 60);
+        _spacing = config.GetDouble("drawing.spacing", 80);
+        _titleBlockH = config.GetDouble("drawing.title_block_h", 60);
+        _showTopView = config.GetBool("drawing.show_top", true);
+        _showFrontView = config.GetBool("drawing.show_front", true);
+        _showSideView = config.GetBool("drawing.show_side", true);
+        _showDimensions = config.GetBool("drawing.show_dimensions", true);
     }
 
     private void NotifyViewSizes()
@@ -191,7 +206,7 @@ public partial class DrawingViewModel : ViewModelBase
         var len = part.Dimensions.Length * Scale;
         var wid = part.Dimensions.Width * Scale;
         var thk = part.Dimensions.Thickness * Scale;
-        const double viewScale = 4.0; // pixels per inch for display
+        var viewScale = _displayPpi;
 
         var sb = new StringBuilder();
 
@@ -203,9 +218,9 @@ public partial class DrawingViewModel : ViewModelBase
 
         if (views.Count == 0) views.Add(("TOP VIEW", len * viewScale, wid * viewScale, part.Dimensions.Length, part.Dimensions.Width));
 
-        const double margin = 60;
-        const double spacing = 80;
-        const double titleBlockH = 60;
+        var margin = _margin;
+        var spacing = _spacing;
+        var titleBlockH = _titleBlockH;
 
         // Arrange views in a row
         var totalW = views.Sum(v => v.W) + spacing * (views.Count - 1) + margin * 2;

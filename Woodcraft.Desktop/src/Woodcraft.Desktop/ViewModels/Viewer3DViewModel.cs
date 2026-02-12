@@ -46,6 +46,16 @@ public partial class Viewer3DViewModel : ViewModelBase
     [ObservableProperty]
     private double _cameraRotationY = 45;
 
+    // Assembly opacities (configurable)
+    private double _assemblyCurrent = 1.0;
+    private double _assemblyPrevious = 0.5;
+    private double _assemblyFuture = 0.15;
+
+    // Stored config defaults for ResetCamera
+    private double _defaultCameraDistance = 100;
+    private double _defaultCameraRotationX = 30;
+    private double _defaultCameraRotationY = 45;
+
     [ObservableProperty]
     private Part? _secondarySelectedPart;
 
@@ -58,9 +68,20 @@ public partial class Viewer3DViewModel : ViewModelBase
     public event Action? JointAdded;
     public event Action<Part>? PartPositionChanged;
 
-    public Viewer3DViewModel(ICadService cadService)
+    public Viewer3DViewModel(ICadService cadService, IConfigService config)
     {
         _cadService = cadService;
+
+        _defaultCameraDistance = config.GetDouble("viewer3d.camera_distance", 100);
+        _defaultCameraRotationX = config.GetDouble("viewer3d.camera_rotation_x", 30);
+        _defaultCameraRotationY = config.GetDouble("viewer3d.camera_rotation_y", 45);
+        _cameraDistance = _defaultCameraDistance;
+        _cameraRotationX = _defaultCameraRotationX;
+        _cameraRotationY = _defaultCameraRotationY;
+        _explosionFactor = config.GetDouble("viewer3d.explosion_factor", 2.0);
+        _assemblyCurrent = config.GetDouble("viewer3d.assembly_current_opacity", 1.0);
+        _assemblyPrevious = config.GetDouble("viewer3d.assembly_previous_opacity", 0.5);
+        _assemblyFuture = config.GetDouble("viewer3d.assembly_future_opacity", 0.15);
     }
 
     partial void OnProjectChanged(Project? value)
@@ -203,9 +224,9 @@ public partial class Viewer3DViewModel : ViewModelBase
     [RelayCommand]
     private void ResetCamera()
     {
-        CameraDistance = 100;
-        CameraRotationX = 30;
-        CameraRotationY = 45;
+        CameraDistance = _defaultCameraDistance;
+        CameraRotationX = _defaultCameraRotationX;
+        CameraRotationY = _defaultCameraRotationY;
     }
 
     [RelayCommand]
@@ -232,8 +253,8 @@ public partial class Viewer3DViewModel : ViewModelBase
     [RelayCommand]
     private void ViewIsometric()
     {
-        CameraRotationX = 30;
-        CameraRotationY = 45;
+        CameraRotationX = _defaultCameraRotationX;
+        CameraRotationY = _defaultCameraRotationY;
     }
 
     public void SelectPartByModel(Part3DModel? model, bool isCtrlHeld = false)
@@ -434,11 +455,11 @@ public partial class Viewer3DViewModel : ViewModelBase
         {
             var partId = model.Part?.Id ?? "";
             if (currentPartIds.Contains(partId))
-                model.AssemblyOpacity = 1.0;
+                model.AssemblyOpacity = _assemblyCurrent;
             else if (previousPartIds.Contains(partId))
-                model.AssemblyOpacity = 0.5;
+                model.AssemblyOpacity = _assemblyPrevious;
             else
-                model.AssemblyOpacity = 0.15;
+                model.AssemblyOpacity = _assemblyFuture;
         }
     }
 

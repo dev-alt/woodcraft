@@ -9,6 +9,7 @@ namespace Woodcraft.Desktop.ViewModels;
 public partial class PartEditorViewModel : ViewModelBase
 {
     private readonly IProjectService _projectService;
+    private readonly IConfigService _config;
 
     [ObservableProperty]
     private Part? _part;
@@ -90,9 +91,10 @@ public partial class PartEditorViewModel : ViewModelBase
 
     public event Action? ChangesApplied;
 
-    public PartEditorViewModel(IProjectService projectService)
+    public PartEditorViewModel(IProjectService projectService, IConfigService config)
     {
         _projectService = projectService;
+        _config = config;
     }
 
     partial void OnPartChanged(Part? value)
@@ -187,11 +189,12 @@ public partial class PartEditorViewModel : ViewModelBase
     {
         PartId = string.Empty;
         PartType = PartType.Panel;
-        Length = 24;
-        Width = 12;
-        Thickness = 0.75;
-        Quantity = 1;
-        Material = "pine";
+        Length = _config.GetDouble("parts.default_length", 24);
+        Width = _config.GetDouble("parts.default_width", 12);
+        Thickness = _config.GetDouble("parts.default_thickness", 0.75);
+        Quantity = _config.GetInt("parts.default_quantity", 1);
+        var mat = _config.GetString("parts.default_material", "pine");
+        Material = mat;
         GrainDirection = GrainDirection.Length;
         Notes = string.Empty;
         PositionX = 0;
@@ -199,7 +202,7 @@ public partial class PartEditorViewModel : ViewModelBase
         PositionZ = 0;
         RotationZ = 0;
         EstimatedCostText = string.Empty;
-        _selectedMaterialInfo = MaterialOptions.FirstOrDefault(m => m.Id == "pine");
+        _selectedMaterialInfo = MaterialOptions.FirstOrDefault(m => m.Id == mat);
         OnPropertyChanged(nameof(SelectedMaterialInfo));
     }
 

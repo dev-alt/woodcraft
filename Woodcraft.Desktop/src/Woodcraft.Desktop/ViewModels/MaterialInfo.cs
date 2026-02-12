@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Media;
+using Woodcraft.Core.Interfaces;
 
 namespace Woodcraft.Desktop.ViewModels;
 
@@ -7,7 +8,7 @@ public record MaterialInfo(string Id, string DisplayName, string PriceCategory, 
 {
     public IBrush SwatchBrush => new SolidColorBrush(WoodColor);
 
-    public static IReadOnlyList<MaterialInfo> All { get; } =
+    private static readonly List<MaterialInfo> _defaults =
     [
         new("pine", "Pine", "$", Color.Parse("#F5DEB3")),
         new("red_oak", "Red Oak", "$$", Color.Parse("#C4956A")),
@@ -24,6 +25,41 @@ public record MaterialInfo(string Id, string DisplayName, string PriceCategory, 
         new("mdf", "MDF", "$", Color.Parse("#B8956A")),
     ];
 
+    public static IReadOnlyList<MaterialInfo> All { get; private set; } = _defaults;
+
+    // Color offsets for wood grain gradient
+    private static int _lighterR = 25, _lighterG = 20, _lighterB = 15;
+    private static int _darkerR = 30, _darkerG = 25, _darkerB = 20;
+
+    public static void Initialize(IConfigService config)
+    {
+        var catalog = config.GetList("materials.catalog", row => new MaterialInfo(
+            row.GetString("id", ""),
+            row.GetString("display", ""),
+            row.GetString("price", "$"),
+            Color.Parse(row.GetString("color", "#C0C0C0"))
+        ));
+
+        if (catalog.Count > 0)
+            All = catalog;
+
+        var lighter = config.GetTable("materials.color_lighter");
+        if (lighter != null)
+        {
+            _lighterR = lighter.GetInt("r", _lighterR);
+            _lighterG = lighter.GetInt("g", _lighterG);
+            _lighterB = lighter.GetInt("b", _lighterB);
+        }
+
+        var darker = config.GetTable("materials.color_darker");
+        if (darker != null)
+        {
+            _darkerR = darker.GetInt("r", _darkerR);
+            _darkerG = darker.GetInt("g", _darkerG);
+            _darkerB = darker.GetInt("b", _darkerB);
+        }
+    }
+
     public static MaterialInfo GetById(string? id) =>
         All.FirstOrDefault(m => m.Id == id) ?? All[0];
 
@@ -32,13 +68,13 @@ public record MaterialInfo(string Id, string DisplayName, string PriceCategory, 
         var info = GetById(materialId);
         var baseColor = info.WoodColor;
         var lighter = Color.FromRgb(
-            (byte)Math.Min(255, baseColor.R + 25),
-            (byte)Math.Min(255, baseColor.G + 20),
-            (byte)Math.Min(255, baseColor.B + 15));
+            (byte)Math.Min(255, baseColor.R + _lighterR),
+            (byte)Math.Min(255, baseColor.G + _lighterG),
+            (byte)Math.Min(255, baseColor.B + _lighterB));
         var darker = Color.FromRgb(
-            (byte)Math.Max(0, baseColor.R - 30),
-            (byte)Math.Max(0, baseColor.G - 25),
-            (byte)Math.Max(0, baseColor.B - 20));
+            (byte)Math.Max(0, baseColor.R - _darkerR),
+            (byte)Math.Max(0, baseColor.G - _darkerG),
+            (byte)Math.Max(0, baseColor.B - _darkerB));
 
         var brush = new LinearGradientBrush
         {

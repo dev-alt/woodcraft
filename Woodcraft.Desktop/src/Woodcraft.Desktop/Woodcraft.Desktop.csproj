@@ -32,6 +32,9 @@
     <!-- SVG/Image rendering for 3D preview -->
     <PackageReference Include="Svg.Skia" Version="2.0.0.4" />
     <PackageReference Include="Avalonia.Svg.Skia" Version="11.2.0.1" />
+
+    <!-- Lua configuration engine -->
+    <PackageReference Include="MoonSharp" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,7 +42,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="Assets\**" Exclude="Assets\config.lua" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\config.lua" Link="config.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

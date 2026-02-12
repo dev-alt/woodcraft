@@ -46,22 +46,46 @@ public partial class CutListViewModel : ViewModelBase
     [ObservableProperty]
     private double _kerf = 0.125;
 
-    public ObservableCollection<StockPreset> StockPresets { get; } =
-    [
-        new("Full Sheet (4'\u00d78')", 96, 48),
-        new("Half Sheet (4'\u00d74')", 48, 48),
-        new("Quarter Sheet (2'\u00d74')", 48, 24),
-        new("Project Panel (2'\u00d72')", 24, 24)
-    ];
+    public ObservableCollection<StockPreset> StockPresets { get; } = [];
 
-    public ObservableCollection<string> Materials { get; } =
-    [
-        "plywood", "mdf", "particle_board", "melamine"
-    ];
+    public ObservableCollection<string> Materials { get; } = [];
 
-    public CutListViewModel(ICadService cadService)
+    public CutListViewModel(ICadService cadService, IConfigService config)
     {
         _cadService = cadService;
+
+        // Load defaults from config
+        _stockLength = config.GetDouble("cutlist.stock_length", 96);
+        _stockWidth = config.GetDouble("cutlist.stock_width", 48);
+        _stockThickness = config.GetDouble("cutlist.stock_thickness", 0.75);
+        _stockMaterial = config.GetString("cutlist.stock_material", "plywood");
+        _kerf = config.GetDouble("cutlist.kerf", 0.125);
+
+        var presets = config.GetList("cutlist.presets", row => new StockPreset(
+            row.GetString("name", ""),
+            row.GetDouble("length", 96),
+            row.GetDouble("width", 48)
+        ));
+        if (presets.Count > 0)
+            foreach (var p in presets) StockPresets.Add(p);
+        else
+        {
+            StockPresets.Add(new("Full Sheet (4'\u00d78')", 96, 48));
+            StockPresets.Add(new("Half Sheet (4'\u00d74')", 48, 48));
+            StockPresets.Add(new("Quarter Sheet (2'\u00d74')", 48, 24));
+            StockPresets.Add(new("Project Panel (2'\u00d72')", 24, 24));
+        }
+
+        var matList = config.GetStringList("cutlist.materials");
+        if (matList.Count > 0)
+            foreach (var m in matList) Materials.Add(m);
+        else
+        {
+            Materials.Add("plywood");
+            Materials.Add("mdf");
+            Materials.Add("particle_board");
+            Materials.Add("melamine");
+        }
     }
 
     partial void OnProjectChanged(Project? value)

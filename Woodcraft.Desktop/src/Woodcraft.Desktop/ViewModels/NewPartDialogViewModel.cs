@@ -1,12 +1,16 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
+using Woodcraft.Core.Interfaces;
 using Woodcraft.Core.Models;
 
 namespace Woodcraft.Desktop.ViewModels;
 
 public partial class NewPartDialogViewModel : ViewModelBase
 {
+    private readonly IConfigService? _config;
+
     [ObservableProperty]
     private string _partName = string.Empty;
 
@@ -61,24 +65,57 @@ public partial class NewPartDialogViewModel : ViewModelBase
         }
     }
 
-    public ObservableCollection<PartPreset> Presets { get; } =
-    [
-        new PartPreset("Shelf", PartType.Shelf, 36, 10, 0.75, "pine", "Standard shelf"),
-        new PartPreset("Side Panel", PartType.Side, 36, 12, 0.75, "pine", "Cabinet side"),
-        new PartPreset("Top/Bottom", PartType.Top, 36, 12, 0.75, "pine", "Cabinet top or bottom"),
-        new PartPreset("Drawer Front", PartType.DrawerFront, 18, 6, 0.75, "pine", "Drawer face"),
-        new PartPreset("Drawer Side", PartType.DrawerSide, 18, 6, 0.5, "pine", "Drawer side panel"),
-        new PartPreset("Drawer Bottom", PartType.DrawerBottom, 17, 15, 0.25, "plywood", "Drawer floor"),
-        new PartPreset("Back Panel", PartType.Back, 36, 24, 0.25, "plywood", "Cabinet back"),
-        new PartPreset("Door", PartType.Door, 24, 18, 0.75, "pine", "Cabinet door"),
-        new PartPreset("Face Frame Rail", PartType.Rail, 36, 2, 0.75, "pine", "Horizontal frame piece"),
-        new PartPreset("Face Frame Stile", PartType.Stile, 24, 2, 0.75, "pine", "Vertical frame piece"),
-    ];
+    public ObservableCollection<PartPreset> Presets { get; } = [];
 
     public event Action? CloseRequested;
 
     public NewPartDialogViewModel()
     {
+        _config = Program.Services?.GetService<IConfigService>();
+
+        // Load defaults from config
+        if (_config != null)
+        {
+            _length = _config.GetDouble("parts.default_length", 24);
+            _width = _config.GetDouble("parts.default_width", 12);
+            _thickness = _config.GetDouble("parts.default_thickness", 0.75);
+            _quantity = _config.GetInt("parts.default_quantity", 1);
+            _material = _config.GetString("parts.default_material", "pine");
+        }
+
+        // Load presets from config
+        var presets = _config?.GetList("parts.presets", row =>
+        {
+            var ptStr = row.GetString("part_type", "Panel");
+            Enum.TryParse<PartType>(ptStr, out var pt);
+            return new PartPreset(
+                row.GetString("name", ""),
+                pt,
+                row.GetDouble("length", 24),
+                row.GetDouble("width", 12),
+                row.GetDouble("thickness", 0.75),
+                row.GetString("material", "pine"),
+                row.GetString("description", ""));
+        });
+
+        if (presets != null && presets.Count > 0)
+        {
+            foreach (var p in presets) Presets.Add(p);
+        }
+        else
+        {
+            Presets.Add(new("Shelf", PartType.Shelf, 36, 10, 0.75, "pine", "Standard shelf"));
+            Presets.Add(new("Side Panel", PartType.Side, 36, 12, 0.75, "pine", "Cabinet side"));
+            Presets.Add(new("Top/Bottom", PartType.Top, 36, 12, 0.75, "pine", "Cabinet top or bottom"));
+            Presets.Add(new("Drawer Front", PartType.DrawerFront, 18, 6, 0.75, "pine", "Drawer face"));
+            Presets.Add(new("Drawer Side", PartType.DrawerSide, 18, 6, 0.5, "pine", "Drawer side panel"));
+            Presets.Add(new("Drawer Bottom", PartType.DrawerBottom, 17, 15, 0.25, "plywood", "Drawer floor"));
+            Presets.Add(new("Back Panel", PartType.Back, 36, 24, 0.25, "plywood", "Cabinet back"));
+            Presets.Add(new("Door", PartType.Door, 24, 18, 0.75, "pine", "Cabinet door"));
+            Presets.Add(new("Face Frame Rail", PartType.Rail, 36, 2, 0.75, "pine", "Horizontal frame piece"));
+            Presets.Add(new("Face Frame Stile", PartType.Stile, 24, 2, 0.75, "pine", "Vertical frame piece"));
+        }
+
         GeneratePartName();
         _selectedMaterialInfo = MaterialOptions.FirstOrDefault(m => m.Id == Material);
     }

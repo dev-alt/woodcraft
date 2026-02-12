@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
+using Woodcraft.Core.Interfaces;
 
 namespace Woodcraft.Desktop.ViewModels;
 
@@ -34,25 +36,66 @@ public partial class NewProjectDialogViewModel : ViewModelBase
         "cherry", "walnut", "poplar", "ash", "birch", "hickory", "plywood", "mdf"
     ];
 
-    public ObservableCollection<ProjectTemplate> Templates { get; } =
-    [
-        new ProjectTemplate("Empty Project", "Start with a blank project", [], "empty"),
-        new ProjectTemplate("Simple Bookshelf", "Basic bookshelf with 2 sides, top, bottom, and 2 shelves",
-            ["left_side", "right_side", "top", "bottom", "shelf_1", "shelf_2"], "bookshelf"),
-        new ProjectTemplate("Wall Cabinet", "Kitchen-style wall cabinet with door",
-            ["left_side", "right_side", "top", "bottom", "back", "shelf", "door"], "cabinet"),
-        new ProjectTemplate("Drawer Box", "Simple drawer with front, sides, back, and bottom",
-            ["front", "left_side", "right_side", "back", "bottom"], "drawer"),
-        new ProjectTemplate("Storage Box", "Simple box with lid",
-            ["front", "back", "left_side", "right_side", "bottom", "lid"], "box"),
-        new ProjectTemplate("Workbench Top", "Solid workbench top with stretchers",
-            ["top_front", "top_back", "top_center", "front_stretcher", "back_stretcher", "side_stretcher_left", "side_stretcher_right"], "workbench"),
-    ];
+    public ObservableCollection<ProjectTemplate> Templates { get; } = [];
 
     public event Action? CloseRequested;
 
     public NewProjectDialogViewModel()
     {
+        var config = Program.Services?.GetService<IConfigService>();
+
+        if (config != null)
+        {
+            _projectName = config.GetString("projects.default_name", "My Project");
+            _units = config.GetString("projects.default_units", "inches");
+            _defaultMaterial = config.GetString("projects.default_material", "pine");
+        }
+
+        // Load templates from config
+        var templates = config?.GetList("projects.templates", row =>
+        {
+            var parts = new List<string>();
+            var partsTable = row as IConfigTable;
+            // Try reading the "parts" sub-table as a string list
+            // We need to access the raw row for nested tables
+            if (row is Services.LuaConfigTable luaRow)
+            {
+                var partsVal = luaRow.Raw.Get("parts");
+                if (partsVal.Type == MoonSharp.Interpreter.DataType.Table)
+                {
+                    foreach (var pair in partsVal.Table.Pairs)
+                    {
+                        if (pair.Value.Type == MoonSharp.Interpreter.DataType.String)
+                            parts.Add(pair.Value.String);
+                    }
+                }
+            }
+            return new ProjectTemplate(
+                row.GetString("name", ""),
+                row.GetString("description", ""),
+                parts.ToArray(),
+                row.GetString("id", ""));
+        });
+
+        if (templates != null && templates.Count > 0)
+        {
+            foreach (var t in templates) Templates.Add(t);
+        }
+        else
+        {
+            Templates.Add(new("Empty Project", "Start with a blank project", [], "empty"));
+            Templates.Add(new("Simple Bookshelf", "Basic bookshelf with 2 sides, top, bottom, and 2 shelves",
+                ["left_side", "right_side", "top", "bottom", "shelf_1", "shelf_2"], "bookshelf"));
+            Templates.Add(new("Wall Cabinet", "Kitchen-style wall cabinet with door",
+                ["left_side", "right_side", "top", "bottom", "back", "shelf", "door"], "cabinet"));
+            Templates.Add(new("Drawer Box", "Simple drawer with front, sides, back, and bottom",
+                ["front", "left_side", "right_side", "back", "bottom"], "drawer"));
+            Templates.Add(new("Storage Box", "Simple box with lid",
+                ["front", "back", "left_side", "right_side", "bottom", "lid"], "box"));
+            Templates.Add(new("Workbench Top", "Solid workbench top with stretchers",
+                ["top_front", "top_back", "top_center", "front_stretcher", "back_stretcher", "side_stretcher_left", "side_stretcher_right"], "workbench"));
+        }
+
         SelectedTemplate = Templates[0]; // Empty project by default
     }
 

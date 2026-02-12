@@ -2,6 +2,7 @@ using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Woodcraft.Core.Interfaces;
+using Woodcraft.Core.Models;
 using Woodcraft.Desktop.Services;
 using Woodcraft.Desktop.ViewModels;
 
@@ -23,6 +24,12 @@ public static class Program
         // Build service provider
         Services = ConfigureServices();
 
+        // Initialize static helpers that read from config
+        var config = Services.GetRequiredService<IConfigService>();
+        CostHelper.Initialize(config);
+        MaterialInfo.Initialize(config);
+        JointParameterDefinitions.Initialize(config);
+
         return AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
@@ -41,6 +48,7 @@ public static class Program
         });
 
         // Services
+        services.AddSingleton<IConfigService, LuaConfigService>();
         services.AddSingleton<IPythonBridge, PythonBridge>();
         services.AddSingleton<IProjectService, ProjectService>();
         services.AddSingleton<ICadService, CadService>();
